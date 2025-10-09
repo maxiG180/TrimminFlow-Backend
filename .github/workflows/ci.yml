@@ -1,4 +1,4 @@
-name: CI/CD
+name: CI
 
 on:
   push:
@@ -40,4 +40,4 @@ jobs:
         SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/trimminflow
         SPRING_DATASOURCE_USERNAME: trimminflow_user
         SPRING_DATASOURCE_PASSWORD: mx269518
-      run: cd demo && chmod +x gradlew && ./gradlew build sonar --info
+      run: cd demo && chmod +x gradlew && ./gradlew build sonar
