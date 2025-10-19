@@ -13,18 +13,18 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  backend:
-    build: .
-    container_name: trimminflow-backend
-    restart: always
-    ports:
-      - "8080:8080"e
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/trimminflow
-      SPRING_DATASOURCE_USERNAME: trimminflow_user
-      SPRING_DATASOURCE_PASSWORD: mx269518
-    depends_on:
-      - postgres
+  # backend:
+  #   build: .
+  #   container_name: trimminflow-backend
+  #   restart: always
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/trimminflow
+  #     SPRING_DATASOURCE_USERNAME: trimminflow_user
+  #     SPRING_DATASOURCE_PASSWORD: mx269518
+  #   depends_on:
+  #     - postgres
 
 volumes:
   postgres_data:

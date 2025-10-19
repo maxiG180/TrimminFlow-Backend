@@ -1,5 +1,5 @@
 name: CI
-
+# WHEN to run this workflow
 on:
   push:
     branches: [ main ]
@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    # Start a PostgreSQL database for testing
     services:
       postgres:
         image: postgres:15
@@ -24,7 +24,7 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
+    # Setup environment
     steps:
     - uses: actions/checkout@v4
 
@@ -33,7 +33,7 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-
+      #Build and test
     - name: Build and analyze
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

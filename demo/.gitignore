@@ -31,3 +31,24 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Gradle ###
+.gradle/
+gradle/
+gradlew
+gradlew.bat
+**/build/
+!src/**/build/
+
+### Gradle Wrapper JAR (optional - uncomment to exclude) ###
+# gradle-wrapper.jar
+
+### OS Files ###
+.DS_Store
+Thumbs.db
+*.log
+
+### Application ###
+*.db
+*.sqlite
+nul

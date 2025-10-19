@@ -19,15 +19,15 @@ public class User {
     @NotBlank
     private String email;
 
-    @Column(nullable = false)
+    @Column(name = "first_name", nullable = false)
     @NotBlank
     private String firstName;
 
-    @Column(nullable = false)
+    @Column(name = "last_name", nullable = false)
     @NotBlank
     private String lastName;
 
-    @Column(nullable = false)
+    @Column(name = "password_hash", nullable = false)
     @NotBlank
     private String password;
 
@@ -38,6 +38,9 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UserRole role;
+
+    @Column(name = "last_login")
+    private LocalDateTime lastLogin;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -87,6 +90,9 @@ public class User {
 
     public UserRole getRole() { return role; }
     public void setRole(UserRole role) { this.role = role; }
+
+    public LocalDateTime getLastLogin() { return lastLogin; }
+    public void setLastLogin(LocalDateTime lastLogin) { this.lastLogin = lastLogin; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

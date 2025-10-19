@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/barbershops")
@@ -29,7 +30,7 @@ public class BarbershopController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get barbershop by ID", description = "Retrieve a barbershop by its ID")
-    public ResponseEntity<Barbershop> getBarbershopById(@PathVariable Long id) {
+    public ResponseEntity<Barbershop> getBarbershopById(@PathVariable UUID id) {
         return barbershopService.getBarbershopById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -44,7 +45,7 @@ public class BarbershopController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update barbershop", description = "Update an existing barbershop by ID")
-    public ResponseEntity<Barbershop> updateBarbershop(@PathVariable Long id, @RequestBody Barbershop barbershop) {
+    public ResponseEntity<Barbershop> updateBarbershop(@PathVariable UUID id, @RequestBody Barbershop barbershop) {
         try {
             Barbershop updated = barbershopService.updateBarbershop(id, barbershop);
             return ResponseEntity.ok(updated);
@@ -55,7 +56,7 @@ public class BarbershopController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete barbershop", description = "Delete a barbershop by ID")
-    public ResponseEntity<Void> deleteBarbershop(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteBarbershop(@PathVariable UUID id) {
         barbershopService.deleteBarbershop(id);
         return ResponseEntity.noContent().build();
     }
