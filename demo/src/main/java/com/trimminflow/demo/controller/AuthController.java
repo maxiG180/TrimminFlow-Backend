@@ -1,5 +1,7 @@
 package com.trimminflow.demo.controller;
 
+import com.trimminflow.demo.dto.LoginRequest;
+import com.trimminflow.demo.dto.LoginResponse;
 import com.trimminflow.demo.dto.RegisterRequest;
 import com.trimminflow.demo.dto.RegisterResponse;
 import com.trimminflow.demo.service.AuthService;
@@ -34,6 +36,22 @@ public class AuthController {
             return ResponseEntity.badRequest().body(
                 new RegisterResponse(null, null, null, e.getMessage())
             );
+        }
+    }
+
+    @PostMapping("/login")
+    @Operation(
+        summary = "Login user",
+        description = "Authenticate a user with email and password. Returns JWT access token."
+    )
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+        try {
+            LoginResponse response = authService.login(request);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            LoginResponse errorResponse = new LoginResponse();
+            errorResponse.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
         }
     }
 }

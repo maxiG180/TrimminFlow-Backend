@@ -1,12 +1,15 @@
 package com.trimminflow.demo.config;
 
+import com.trimminflow.demo.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -17,15 +20,37 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private final JwtAuthenticationFilter jwtAuthFilter;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter) {
+        this.jwtAuthFilter = jwtAuthFilter;
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())  // Disable CSRF for development
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))  // Enable CORS with custom config
+            .csrf(csrf -> csrf.disable())  // Disable CSRF (using JWT instead)
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))  // Enable CORS
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)  // No sessions, JWT only
+            )
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/api/**").permitAll()
-                .anyRequest().permitAll()  // Allow all for development
-            );
+                // Public endpoints (no authentication required)
+                .requestMatchers(
+                    "/swagger-ui/**",
+                    "/swagger-ui.html",
+                    "/v3/api-docs/**",
+                    "/api/v1/auth/register",
+                    "/api/v1/auth/login",
+                    "/api/v1/health"
+                ).permitAll()
+                // Protected endpoints (authentication required)
+                .requestMatchers("/api/v1/barbershops/**").authenticated()
+                .requestMatchers("/api/v1/users/**").authenticated()
+                .anyRequest().authenticated()  // All other requests require authentication
+            )
+            // Add JWT filter before Spring Security's authentication filter
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
