@@ -47,6 +47,7 @@ public class SecurityConfig {
                 // Protected endpoints (authentication required)
                 .requestMatchers("/api/v1/barbershops/**").authenticated()
                 .requestMatchers("/api/v1/users/**").authenticated()
+                .requestMatchers("/api/v1/services/**").authenticated()
                 .anyRequest().authenticated()  // All other requests require authentication
             )
             // Add JWT filter before Spring Security's authentication filter
