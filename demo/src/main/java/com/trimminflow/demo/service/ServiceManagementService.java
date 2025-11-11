@@ -7,7 +7,6 @@ import com.trimminflow.demo.entity.Barbershop;
 import com.trimminflow.demo.entity.Service;
 import com.trimminflow.demo.repository.BarbershopRepository;
 import com.trimminflow.demo.repository.ServiceRepository;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;

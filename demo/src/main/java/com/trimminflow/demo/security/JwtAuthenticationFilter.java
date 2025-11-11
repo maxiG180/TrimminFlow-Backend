@@ -2,6 +2,7 @@ package com.trimminflow.demo.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.lang.NonNull;
@@ -19,12 +20,14 @@ import java.util.Collections;
  * JWT Authentication Filter
  *
  * This filter intercepts every HTTP request and:
- * 1. Extracts the JWT token from the Authorization header
+ * 1. Extracts the JWT token from httpOnly cookie OR Authorization header (fallback)
  * 2. Validates the token
  * 3. Sets the authentication in Spring Security context
  *
  * This allows Spring Security to know which user is making the request
  * and protect routes based on authentication status and roles.
+ *
+ * SECURITY: Prioritizes httpOnly cookies (XSS-protected) over Authorization header
  */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -42,19 +45,33 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        // Get Authorization header from request
-        final String authHeader = request.getHeader("Authorization");
+        String jwt = null;
 
-        // Check if header exists and starts with "Bearer "
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            // No token found, continue to next filter
+        // 1. Try to get token from httpOnly cookie (SECURE - preferred method)
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("accessToken".equals(cookie.getName())) {
+                    jwt = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        // 2. Fallback: Get token from Authorization header (for backward compatibility)
+        if (jwt == null) {
+            final String authHeader = request.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                jwt = authHeader.substring(7);
+            }
+        }
+
+        // If no token found, continue to next filter
+        if (jwt == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
         try {
-            // Extract token (remove "Bearer " prefix)
-            final String jwt = authHeader.substring(7);
 
             // Extract user information from token
             final String userEmail = jwtUtil.extractEmail(jwt);
