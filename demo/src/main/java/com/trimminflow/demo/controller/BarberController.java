@@ -56,22 +56,33 @@ public class BarberController {
     }
 
     /**
-     * Get all barbers for the barbershop (paginated)
+     * Get barbers with pagination and optional search
      *
-     * GET /api/v1/barbers?page=0&size=10
+     * GET /api/v1/barbers?page=0&size=10&search=john&activeOnly=true
      */
     @GetMapping
     @Operation(
-        summary = "Get all barbers (paginated)",
-        description = "Get paginated barbers for the authenticated user's barbershop"
+        summary = "Get barbers with pagination",
+        description = "Get paginated barbers with optional search by name or email"
     )
     public ResponseEntity<PageResponse<BarberResponse>> getAllBarbers(
         @RequestHeader("X-Barbershop-Id") UUID barbershopId,
         @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) String search,
+        @RequestParam(defaultValue = "false") boolean activeOnly
     ) {
-        PageResponse<BarberResponse> barbers = barberManagementService.getAllBarbersPaginated(barbershopId, page, size);
-        return ResponseEntity.ok(barbers);
+        PageResponse<BarberResponse> response;
+
+        if (search != null && !search.trim().isEmpty()) {
+            response = barberManagementService.searchBarbers(barbershopId, search, page, size, activeOnly);
+        } else {
+            response = activeOnly ?
+                barberManagementService.getActiveBarbersPaginated(barbershopId, page, size) :
+                barberManagementService.getAllBarbersPaginated(barbershopId, page, size);
+        }
+
+        return ResponseEntity.ok(response);
     }
 
     /**

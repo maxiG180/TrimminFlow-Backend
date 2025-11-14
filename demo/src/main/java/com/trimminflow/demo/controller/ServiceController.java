@@ -1,6 +1,8 @@
 package com.trimminflow.demo.controller;
 
 import com.trimminflow.demo.dto.CreateServiceRequest;
+import com.trimminflow.demo.dto.ErrorResponse;
+import com.trimminflow.demo.dto.PageResponse;
 import com.trimminflow.demo.dto.ServiceResponse;
 import com.trimminflow.demo.dto.UpdateServiceRequest;
 import com.trimminflow.demo.service.ServiceManagementService;
@@ -51,7 +53,7 @@ public class ServiceController {
         summary = "Create a new service",
         description = "Create a new service for the authenticated user's barbershop"
     )
-    public ResponseEntity<ServiceResponse> createService(
+    public ResponseEntity<?> createService(
         @Valid @RequestBody CreateServiceRequest request,
         @RequestHeader("X-Barbershop-Id") UUID barbershopId
     ) {
@@ -59,25 +61,56 @@ public class ServiceController {
             ServiceResponse response = serviceManagementService.createService(barbershopId, request);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest()
+                .body(new ErrorResponse("Service creation failed", e.getMessage()));
         }
     }
 
     /**
-     * Get all services for the barbershop
+     * Get all services for the barbershop (non-paginated)
      *
-     * GET /api/v1/services
+     * GET /api/v1/services/all
      */
-    @GetMapping
+    @GetMapping("/all")
     @Operation(
         summary = "Get all services",
-        description = "Get all services for the authenticated user's barbershop"
+        description = "Get all services for the authenticated user's barbershop (non-paginated)"
     )
     public ResponseEntity<List<ServiceResponse>> getAllServices(
         @RequestHeader("X-Barbershop-Id") UUID barbershopId
     ) {
         List<ServiceResponse> services = serviceManagementService.getAllServices(barbershopId);
         return ResponseEntity.ok(services);
+    }
+
+    /**
+     * Get services with pagination and optional search
+     *
+     * GET /api/v1/services?page=0&size=10&search=haircut&activeOnly=true
+     */
+    @GetMapping
+    @Operation(
+        summary = "Get services with pagination",
+        description = "Get paginated services with optional search by name or description"
+    )
+    public ResponseEntity<PageResponse<ServiceResponse>> getServicesPaginated(
+        @RequestHeader("X-Barbershop-Id") UUID barbershopId,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) String search,
+        @RequestParam(defaultValue = "false") boolean activeOnly
+    ) {
+        PageResponse<ServiceResponse> response;
+
+        if (search != null && !search.trim().isEmpty()) {
+            response = serviceManagementService.searchServices(barbershopId, search, page, size, activeOnly);
+        } else {
+            response = activeOnly ?
+                serviceManagementService.getActiveServicesPaginated(barbershopId, page, size) :
+                serviceManagementService.getAllServicesPaginated(barbershopId, page, size);
+        }
+
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -137,7 +170,7 @@ public class ServiceController {
         summary = "Update a service",
         description = "Update an existing service. Only provided fields will be updated."
     )
-    public ResponseEntity<ServiceResponse> updateService(
+    public ResponseEntity<?> updateService(
         @PathVariable UUID id,
         @Valid @RequestBody UpdateServiceRequest request,
         @RequestHeader("X-Barbershop-Id") UUID barbershopId
@@ -146,7 +179,8 @@ public class ServiceController {
             ServiceResponse response = serviceManagementService.updateService(id, barbershopId, request);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest()
+                .body(new ErrorResponse("Service update failed", e.getMessage()));
         }
     }
 

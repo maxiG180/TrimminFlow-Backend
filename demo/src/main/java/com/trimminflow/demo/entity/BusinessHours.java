@@ -2,8 +2,6 @@ package com.trimminflow.demo.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import org.hibernate.annotations.CreatedDate;
-import org.hibernate.annotations.UpdatedTimestamp;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -40,11 +38,9 @@ public class BusinessHours {
     @Column(name = "close_time")
     private LocalTime closeTime;
 
-    @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @UpdatedTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
