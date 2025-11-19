@@ -18,6 +18,7 @@ public class BarberResponse {
     private String email;
     private String phone;
     private String bio;
+    private String profileImageUrl;
     private Boolean isActive;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -33,6 +34,7 @@ public class BarberResponse {
         this.email = barber.getEmail();
         this.phone = barber.getPhone();
         this.bio = barber.getBio();
+        this.profileImageUrl = barber.getProfileImageUrl();
         this.isActive = barber.getIsActive();
         this.createdAt = barber.getCreatedAt();
         this.updatedAt = barber.getUpdatedAt();
@@ -59,6 +61,9 @@ public class BarberResponse {
 
     public String getBio() { return bio; }
     public void setBio(String bio) { this.bio = bio; }
+
+    public String getProfileImageUrl() { return profileImageUrl; }
+    public void setProfileImageUrl(String profileImageUrl) { this.profileImageUrl = profileImageUrl; }
 
     public Boolean getIsActive() { return isActive; }
     public void setIsActive(Boolean isActive) { this.isActive = isActive; }

@@ -70,6 +70,11 @@ public class BarberManagementService {
                 request.getBio() != null ? request.getBio().trim() : null
         );
 
+        // Set profile image URL if provided
+        if (request.getProfileImageUrl() != null && !request.getProfileImageUrl().trim().isEmpty()) {
+            barber.setProfileImageUrl(request.getProfileImageUrl().trim());
+        }
+
         Barber savedBarber = barberRepository.save(barber);
         return new BarberResponse(savedBarber);
     }
@@ -227,6 +232,11 @@ public class BarberManagementService {
 
         if (request.getBio() != null) {
             barber.setBio(request.getBio().trim());
+        }
+
+        if (request.getProfileImageUrl() != null) {
+            String trimmedUrl = request.getProfileImageUrl().trim();
+            barber.setProfileImageUrl(trimmedUrl.isEmpty() ? null : trimmedUrl);
         }
 
         if (request.getIsActive() != null) {

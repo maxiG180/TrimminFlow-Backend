@@ -3,6 +3,8 @@ package com.trimminflow.demo.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -26,10 +28,14 @@ public class Barber {
 
     @Column(nullable = false)
     @NotBlank(message = "First name is required")
+    @Size(min = 2, max = 50, message = "First name must be between 2 and 50 characters")
+    @Pattern(regexp = "^[a-zA-Z\\s'-]+$", message = "First name can only contain letters, spaces, hyphens, and apostrophes")
     private String firstName;
 
     @Column(nullable = false)
     @NotBlank(message = "Last name is required")
+    @Size(min = 2, max = 50, message = "Last name must be between 2 and 50 characters")
+    @Pattern(regexp = "^[a-zA-Z\\s'-]+$", message = "Last name can only contain letters, spaces, hyphens, and apostrophes")
     private String lastName;
 
     @Column(unique = true)
@@ -37,10 +43,17 @@ public class Barber {
     private String email;
 
     @Column
+    @Pattern(regexp = "^$|^[\\+]?[(]?[0-9]{1,3}[)]?[-\\s\\.]?[(]?[0-9]{1,4}[)]?[-\\s\\.]?[0-9]{1,4}[-\\s\\.]?[0-9]{1,9}$",
+             message = "Please provide a valid phone number")
     private String phone;
 
     @Column(columnDefinition = "TEXT")
+    @Size(max = 500, message = "Bio must be less than 500 characters")
     private String bio;
+
+    @Column(name = "profile_image_url")
+    @Size(max = 500, message = "Image URL must be less than 500 characters")
+    private String profileImageUrl;
 
     @Column(nullable = false)
     private Boolean isActive = true;
@@ -105,6 +118,9 @@ public class Barber {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public String getProfileImageUrl() { return profileImageUrl; }
+    public void setProfileImageUrl(String profileImageUrl) { this.profileImageUrl = profileImageUrl; }
 
     // Helper method to get full name
     public String getFullName() {

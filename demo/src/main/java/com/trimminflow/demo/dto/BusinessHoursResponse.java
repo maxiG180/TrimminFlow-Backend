@@ -20,7 +20,7 @@ public class BusinessHoursResponse {
     public BusinessHoursResponse(BusinessHours businessHours) {
         this.id = businessHours.getId();
         this.barbershopId = businessHours.getBarbershop().getId();
-        this.dayOfWeek = businessHours.getDayOfWeek();
+        this.dayOfWeek = businessHours.getDayOfWeek() != null ? businessHours.getDayOfWeek().name() : null;
         this.isOpen = businessHours.getIsOpen();
         this.openTime = businessHours.getOpenTime();
         this.closeTime = businessHours.getCloseTime();

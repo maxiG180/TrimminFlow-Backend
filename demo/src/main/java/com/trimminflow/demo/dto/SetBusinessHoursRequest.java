@@ -1,20 +1,28 @@
 package com.trimminflow.demo.dto;
 
+import com.trimminflow.demo.entity.DayOfWeek;
+import com.trimminflow.demo.validation.ValidBusinessHours;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalTime;
 
+/**
+ * DTO for setting business hours
+ *
+ * Validation handled by @ValidBusinessHours annotation
+ */
+@ValidBusinessHours
 public class SetBusinessHoursRequest {
     @NotNull(message = "Day of week is required")
-    private String dayOfWeek;
-    
+    private DayOfWeek dayOfWeek;
+
     @NotNull(message = "isOpen is required")
     private Boolean isOpen;
-    
+
     private LocalTime openTime;
     private LocalTime closeTime;
 
-    public String getDayOfWeek() { return dayOfWeek; }
-    public void setDayOfWeek(String dayOfWeek) { this.dayOfWeek = dayOfWeek; }
+    public DayOfWeek getDayOfWeek() { return dayOfWeek; }
+    public void setDayOfWeek(DayOfWeek dayOfWeek) { this.dayOfWeek = dayOfWeek; }
     
     public Boolean getIsOpen() { return isOpen; }
     public void setIsOpen(Boolean isOpen) { this.isOpen = isOpen; }

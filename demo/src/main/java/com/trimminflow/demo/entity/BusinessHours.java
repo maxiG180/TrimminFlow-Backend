@@ -1,5 +1,6 @@
 package com.trimminflow.demo.entity;
 
+import com.trimminflow.demo.validation.ValidBusinessHours;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
@@ -11,9 +12,17 @@ import java.util.UUID;
  * BusinessHours Entity
  *
  * Represents the operating hours for a barbershop on a specific day of the week
+ *
+ * Validation Rules:
+ * - If isOpen = true, both openTime and closeTime must be provided
+ * - openTime must be before closeTime
+ * - Minimum business hours of 1 hour
  */
 @Entity
-@Table(name = "business_hours")
+@Table(name = "business_hours", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"barbershop_id", "day_of_week"})
+})
+@ValidBusinessHours
 public class BusinessHours {
 
     @Id
@@ -26,8 +35,9 @@ public class BusinessHours {
     private Barbershop barbershop;
 
     @NotNull(message = "Day of week is required")
-    @Column(name = "day_of_week", nullable = false)
-    private String dayOfWeek; // MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY
+    @Enumerated(EnumType.STRING)
+    @Column(name = "day_of_week", nullable = false, length = 10)
+    private DayOfWeek dayOfWeek;
 
     @Column(name = "is_open", nullable = false)
     private Boolean isOpen = true;
@@ -50,7 +60,7 @@ public class BusinessHours {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public BusinessHours(Barbershop barbershop, String dayOfWeek, Boolean isOpen, LocalTime openTime, LocalTime closeTime) {
+    public BusinessHours(Barbershop barbershop, DayOfWeek dayOfWeek, Boolean isOpen, LocalTime openTime, LocalTime closeTime) {
         this.barbershop = barbershop;
         this.dayOfWeek = dayOfWeek;
         this.isOpen = isOpen;
@@ -67,8 +77,8 @@ public class BusinessHours {
     public Barbershop getBarbershop() { return barbershop; }
     public void setBarbershop(Barbershop barbershop) { this.barbershop = barbershop; }
 
-    public String getDayOfWeek() { return dayOfWeek; }
-    public void setDayOfWeek(String dayOfWeek) { this.dayOfWeek = dayOfWeek; }
+    public DayOfWeek getDayOfWeek() { return dayOfWeek; }
+    public void setDayOfWeek(DayOfWeek dayOfWeek) { this.dayOfWeek = dayOfWeek; }
 
     public Boolean getIsOpen() { return isOpen; }
     public void setIsOpen(Boolean isOpen) { this.isOpen = isOpen; }

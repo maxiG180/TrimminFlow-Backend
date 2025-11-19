@@ -4,6 +4,7 @@ import com.trimminflow.demo.dto.BusinessHoursResponse;
 import com.trimminflow.demo.dto.SetBusinessHoursRequest;
 import com.trimminflow.demo.entity.Barbershop;
 import com.trimminflow.demo.entity.BusinessHours;
+import com.trimminflow.demo.entity.DayOfWeek;
 import com.trimminflow.demo.repository.BarbershopRepository;
 import com.trimminflow.demo.repository.BusinessHoursRepository;
 import org.springframework.stereotype.Service;
@@ -20,11 +21,6 @@ public class BusinessHoursService {
     private final BusinessHoursRepository businessHoursRepository;
     private final BarbershopRepository barbershopRepository;
 
-    // Valid days of the week
-    private static final List<String> VALID_DAYS = Arrays.asList(
-        "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"
-    );
-
     public BusinessHoursService(BusinessHoursRepository businessHoursRepository, BarbershopRepository barbershopRepository) {
         this.businessHoursRepository = businessHoursRepository;
         this.barbershopRepository = barbershopRepository;
@@ -36,14 +32,10 @@ public class BusinessHoursService {
         Barbershop barbershop = barbershopRepository.findById(barbershopId)
                 .orElseThrow(() -> new RuntimeException("Barbershop not found"));
 
-        // Validate day of week
-        if (request.getDayOfWeek() == null || request.getDayOfWeek().trim().isEmpty()) {
+        // Get day of week enum
+        DayOfWeek dayOfWeek = request.getDayOfWeek();
+        if (dayOfWeek == null) {
             throw new RuntimeException("Day of week is required");
-        }
-
-        String dayOfWeek = request.getDayOfWeek().trim().toUpperCase();
-        if (!VALID_DAYS.contains(dayOfWeek)) {
-            throw new RuntimeException("Invalid day of week. Must be one of: " + String.join(", ", VALID_DAYS));
         }
 
         // Validate isOpen is provided
@@ -85,6 +77,10 @@ public class BusinessHoursService {
         BusinessHours businessHours = businessHoursRepository
                 .findByBarbershopIdAndDayOfWeek(barbershopId, dayOfWeek)
                 .orElse(new BusinessHours(barbershop, dayOfWeek, request.getIsOpen(), request.getOpenTime(), request.getCloseTime()));
+
+        // Set day of week for new entities
+        businessHours.setDayOfWeek(dayOfWeek);
+        businessHours.setBarbershop(barbershop);
 
         // Update the business hours
         businessHours.setIsOpen(request.getIsOpen());

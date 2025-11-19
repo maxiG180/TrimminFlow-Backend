@@ -89,4 +89,16 @@ public class AuthController {
 
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/validate")
+    @Operation(
+        summary = "Validate JWT token",
+        description = "Validates the JWT token from httpOnly cookie. Returns 200 if valid, 401 if invalid/expired."
+    )
+    public ResponseEntity<Void> validateToken() {
+        // If this endpoint is reached, the JWT filter already validated the token
+        // and set the authentication in SecurityContext
+        // If the token was invalid, Spring Security would have returned 401 automatically
+        return ResponseEntity.ok().build();
+    }
 }
