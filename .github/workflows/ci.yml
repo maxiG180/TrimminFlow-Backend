@@ -11,13 +11,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
     - name: Setup Java 17
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
+    - name: Cache Gradle packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.gradle/caches
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+        restore-keys: ${{ runner.os }}-gradle
     - name: Build with Gradle
       run: cd demo && chmod +x gradlew && ./gradlew assemble
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-classes
+        path: demo/build/classes
 
   unit-tests:
     needs: build
@@ -44,6 +57,12 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
+    - name: Cache Gradle packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.gradle/caches
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+        restore-keys: ${{ runner.os }}-gradle
     - name: Run Tests and Generate Report
       env:
         SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/trimminflow
@@ -55,6 +74,11 @@ jobs:
       with:
         name: jacoco-report
         path: demo/build/reports/jacoco/test/jacocoTestReport.xml
+    - name: Upload test build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-build-classes
+        path: demo/build/classes
 
   sonar:
     needs: unit-tests
@@ -68,6 +92,17 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
+    - name: Cache Gradle packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.gradle/caches
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+        restore-keys: ${{ runner.os }}-gradle
+    - name: Download build classes
+      uses: actions/download-artifact@v4
+      with:
+        name: test-build-classes
+        path: demo/build/classes
     - name: Download coverage report
       uses: actions/download-artifact@v4
       with:
@@ -76,4 +111,4 @@ jobs:
     - name: SonarQube Scan
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      run: cd demo && chmod +x gradlew && ./gradlew sonar
+      run: cd demo && chmod +x gradlew && ./gradlew sonar --info
