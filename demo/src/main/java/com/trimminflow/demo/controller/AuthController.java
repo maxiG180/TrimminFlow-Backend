@@ -26,41 +26,38 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    @Operation(
-        summary = "Register new barbershop owner",
-        description = "Register a new barbershop with an owner account. Creates both barbershop and owner user."
-    )
+    @Operation(summary = "Register new barbershop owner", description = "Register a new barbershop with an owner account. Creates both barbershop and owner user.")
     public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
         try {
             RegisterResponse response = authService.registerBarbershopOwner(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(
-                new RegisterResponse(null, null, null, e.getMessage())
-            );
+                    new RegisterResponse(null, null, null, e.getMessage()));
         }
     }
 
     @PostMapping("/login")
-    @Operation(
-        summary = "Login user",
-        description = "Authenticate a user with email and password. Sets JWT in httpOnly cookie for security."
-    )
+    @Operation(summary = "Login user", description = "Authenticate a user with email and password. Sets JWT in httpOnly cookie for security.")
     public ResponseEntity<LoginResponse> login(
             @Valid @RequestBody LoginRequest request,
             HttpServletResponse response) {
         try {
             LoginResponse loginResponse = authService.login(request);
 
-            // Create httpOnly cookie with JWT token
-            Cookie jwtCookie = new Cookie("accessToken", loginResponse.getAccessToken());
-            jwtCookie.setHttpOnly(true);  // ✅ Protected from JavaScript/XSS
-            jwtCookie.setSecure(false);    // Set to true in production with HTTPS
-            jwtCookie.setPath("/");
-            jwtCookie.setMaxAge(24 * 60 * 60); // 24 hours
-            // jwtCookie.setAttribute("SameSite", "Lax"); // CSRF protection (Java 17+)
+            // Create httpOnly cookie with JWT token using ResponseCookie
+            // For CORS (localhost:3000 -> localhost:8080), we need SameSite=None and
+            // Secure=true
+            org.springframework.http.ResponseCookie jwtCookie = org.springframework.http.ResponseCookie
+                    .from("accessToken", loginResponse.getAccessToken())
+                    .httpOnly(true)
+                    .secure(true) // ✅ Required for SameSite=None, even on localhost
+                    .path("/")
+                    .maxAge(24 * 60 * 60)
+                    .sameSite("None") // ✅ Required for cross-site/cross-port cookies
+                    .build();
 
-            response.addCookie(jwtCookie);
+            response.addHeader(org.springframework.http.HttpHeaders.SET_COOKIE, jwtCookie.toString());
 
             // Remove token from response body for security
             loginResponse.setAccessToken(null);
@@ -74,31 +71,30 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    @Operation(
-        summary = "Logout user",
-        description = "Clears the authentication cookie"
-    )
+    @Operation(summary = "Logout user", description = "Clears the authentication cookie")
     public ResponseEntity<Void> logout(HttpServletResponse response) {
         // Clear the cookie by setting maxAge to 0
-        Cookie jwtCookie = new Cookie("accessToken", null);
-        jwtCookie.setHttpOnly(true);
-        jwtCookie.setSecure(false);
-        jwtCookie.setPath("/");
-        jwtCookie.setMaxAge(0); // Delete cookie
-        response.addCookie(jwtCookie);
+        org.springframework.http.ResponseCookie jwtCookie = org.springframework.http.ResponseCookie
+                .from("accessToken", "")
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
+                .sameSite("None")
+                .build();
+
+        response.addHeader(org.springframework.http.HttpHeaders.SET_COOKIE, jwtCookie.toString());
 
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/validate")
-    @Operation(
-        summary = "Validate JWT token",
-        description = "Validates the JWT token from httpOnly cookie. Returns 200 if valid, 401 if invalid/expired."
-    )
+    @Operation(summary = "Validate JWT token", description = "Validates the JWT token from httpOnly cookie. Returns 200 if valid, 401 if invalid/expired.")
     public ResponseEntity<Void> validateToken() {
         // If this endpoint is reached, the JWT filter already validated the token
         // and set the authentication in SecurityContext
-        // If the token was invalid, Spring Security would have returned 401 automatically
+        // If the token was invalid, Spring Security would have returned 401
+        // automatically
         return ResponseEntity.ok().build();
     }
 }

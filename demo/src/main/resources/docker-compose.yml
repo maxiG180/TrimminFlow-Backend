@@ -1,7 +1,7 @@
 version: '3.9'
 services:
   postgres:
-    image: postgres:15
+    image: postgres
     container_name: trimminflow-db
     restart: always
     environment:
@@ -18,7 +18,7 @@ services:
       retries: 5
 
   backend:
-    build: .
+    image: demo-backend
     container_name: trimminflow-backend
     restart: always
     ports:
@@ -27,6 +27,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/trimminflow
       SPRING_DATASOURCE_USERNAME: trimminflow_user
       SPRING_DATASOURCE_PASSWORD: mx269518
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update   # auto-sync DB schema
     depends_on:
       postgres:
         condition: service_healthy
