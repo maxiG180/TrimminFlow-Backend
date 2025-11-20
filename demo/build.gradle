@@ -3,6 +3,7 @@ plugins {
     id 'org.springframework.boot' version '3.5.5'
     id 'io.spring.dependency-management' version '1.1.4'
     id "org.sonarqube" version "6.3.1.5724"
+    id 'jacoco'
 }
 
 group = 'com.trimminflow'
@@ -12,10 +13,15 @@ java {
     sourceCompatibility = '17'
 }
 
+jacoco {
+    toolVersion = "0.8.11"
+}
+
 sonar {
     properties {
         property "sonar.projectKey", "maxiG180_TrimminFlow-Backend"
         property "sonar.organization", "maksym-grebeniuk"
+        property "sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml"
     }
 }
 
@@ -52,4 +58,12 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+tasks.named('jacocoTestReport') {
+    dependsOn test
+    reports {
+        xml.required = true
+    }
 }
