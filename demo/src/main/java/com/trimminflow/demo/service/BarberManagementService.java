@@ -8,6 +8,7 @@ import com.trimminflow.demo.entity.Barber;
 import com.trimminflow.demo.entity.Barbershop;
 import com.trimminflow.demo.repository.BarberRepository;
 import com.trimminflow.demo.repository.BarbershopRepository;
+import com.trimminflow.demo.util.PaginationUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -67,8 +68,7 @@ public class BarberManagementService {
                 lastName,
                 request.getEmail() != null ? request.getEmail().trim() : null,
                 request.getPhone() != null ? request.getPhone().trim() : null,
-                request.getBio() != null ? request.getBio().trim() : null
-        );
+                request.getBio() != null ? request.getBio().trim() : null);
 
         // Set profile image URL if provided
         if (request.getProfileImageUrl() != null && !request.getProfileImageUrl().trim().isEmpty()) {
@@ -87,17 +87,7 @@ public class BarberManagementService {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<Barber> barberPage = barberRepository.findByBarbershopId(barbershopId, pageable);
 
-        List<BarberResponse> barberResponses = barberPage.getContent().stream()
-                .map(BarberResponse::new)
-                .collect(Collectors.toList());
-
-        return new PageResponse<>(
-                barberResponses,
-                barberPage.getNumber(),
-                barberPage.getSize(),
-                barberPage.getTotalElements(),
-                barberPage.getTotalPages()
-        );
+        return PaginationUtils.createPageResponse(barberPage, BarberResponse::new);
     }
 
     /**
@@ -119,21 +109,12 @@ public class BarberManagementService {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<Barber> barberPage = barberRepository.findByBarbershopIdAndIsActiveTrue(barbershopId, pageable);
 
-        List<BarberResponse> barberResponses = barberPage.getContent().stream()
-                .map(BarberResponse::new)
-                .collect(Collectors.toList());
-
-        return new PageResponse<>(
-                barberResponses,
-                barberPage.getNumber(),
-                barberPage.getSize(),
-                barberPage.getTotalElements(),
-                barberPage.getTotalPages()
-        );
+        return PaginationUtils.createPageResponse(barberPage, BarberResponse::new);
     }
 
     /**
-     * Get all active barbers for a barbershop (non-paginated - for backward compatibility)
+     * Get all active barbers for a barbershop (non-paginated - for backward
+     * compatibility)
      */
     @Transactional(readOnly = true)
     public List<BarberResponse> getActiveBarbers(UUID barbershopId) {
@@ -147,38 +128,28 @@ public class BarberManagementService {
      * Search barbers by name or email with pagination
      *
      * @param barbershopId The barbershop's UUID
-     * @param searchTerm The search term
-     * @param page Page number (0-indexed)
-     * @param size Page size
-     * @param activeOnly If true, only return active barbers
+     * @param searchTerm   The search term
+     * @param page         Page number (0-indexed)
+     * @param size         Page size
+     * @param activeOnly   If true, only return active barbers
      * @return PageResponse containing matching BarberResponse list
      */
     @Transactional(readOnly = true)
-    public PageResponse<BarberResponse> searchBarbers(UUID barbershopId, String searchTerm, int page, int size, boolean activeOnly) {
+    public PageResponse<BarberResponse> searchBarbers(UUID barbershopId, String searchTerm, int page, int size,
+            boolean activeOnly) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
         // If search term is empty, return all barbers
         if (searchTerm == null || searchTerm.trim().isEmpty()) {
-            return activeOnly ?
-                getActiveBarbersPaginated(barbershopId, page, size) :
-                getAllBarbersPaginated(barbershopId, page, size);
+            return activeOnly ? getActiveBarbersPaginated(barbershopId, page, size)
+                    : getAllBarbersPaginated(barbershopId, page, size);
         }
 
-        Page<Barber> barberPage = activeOnly ?
-            barberRepository.searchActiveBarbers(barbershopId, searchTerm.trim(), pageable) :
-            barberRepository.searchBarbers(barbershopId, searchTerm.trim(), pageable);
+        Page<Barber> barberPage = activeOnly
+                ? barberRepository.searchActiveBarbers(barbershopId, searchTerm.trim(), pageable)
+                : barberRepository.searchBarbers(barbershopId, searchTerm.trim(), pageable);
 
-        List<BarberResponse> content = barberPage.getContent().stream()
-            .map(BarberResponse::new)
-            .collect(Collectors.toList());
-
-        return new PageResponse<>(
-            content,
-            barberPage.getNumber(),
-            barberPage.getSize(),
-            barberPage.getTotalElements(),
-            barberPage.getTotalPages()
-        );
+        return PaginationUtils.createPageResponse(barberPage, BarberResponse::new);
     }
 
     /**
@@ -220,7 +191,7 @@ public class BarberManagementService {
             String trimmedEmail = request.getEmail().trim();
             // Check for duplicate email (excluding current barber)
             if (!trimmedEmail.isEmpty() &&
-                barberRepository.existsByEmailAndBarbershopIdExcludingId(trimmedEmail, barbershopId, barberId)) {
+                    barberRepository.existsByEmailAndBarbershopIdExcludingId(trimmedEmail, barbershopId, barberId)) {
                 throw new RuntimeException("Email already exists for another barber in this barbershop");
             }
             barber.setEmail(trimmedEmail.isEmpty() ? null : trimmedEmail);
