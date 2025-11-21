@@ -29,30 +29,37 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())  // Disable CSRF (using JWT instead)
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))  // Enable CORS
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)  // No sessions, JWT only
-            )
-            .authorizeHttpRequests(auth -> auth
-                // Public endpoints (no authentication required)
-                .requestMatchers(
-                    "/swagger-ui/**",
-                    "/swagger-ui.html",
-                    "/v3/api-docs/**",
-                    "/api/v1/auth/register",
-                    "/api/v1/auth/login",
-                    "/api/v1/auth/logout",
-                    "/api/v1/health"
-                ).permitAll()
-                // Protected endpoints (authentication required)
-                .requestMatchers("/api/v1/barbershops/**").authenticated()
-                .requestMatchers("/api/v1/users/**").authenticated()
-                .requestMatchers("/api/v1/services/**").authenticated()
-                .anyRequest().authenticated()  // All other requests require authentication
-            )
-            // Add JWT filter before Spring Security's authentication filter
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                // Disable CSRF as we use JWT which is immune to CSRF in this stateless architecture
+                .csrf(csrf -> csrf.disable()) 
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Enable CORS
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // No sessions, JWT only
+                )
+                .authorizeHttpRequests(auth -> auth
+                        // Public endpoints (no authentication required)
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**",
+                                "/api/v1/auth/register",
+                                "/api/v1/auth/login",
+                                "/api/v1/auth/logout",
+                                "/api/v1/health",
+                                // Public Booking Endpoints
+                                "/api/v1/barbershops/{id}",
+                                "/api/v1/services/active",
+                                "/api/v1/barbers/active",
+                                "/api/v1/appointments/availability",
+                                "/api/v1/appointments")
+                        .permitAll()
+                        // Protected endpoints (authentication required)
+                        .requestMatchers("/api/v1/barbershops/**").authenticated()
+                        .requestMatchers("/api/v1/users/**").authenticated()
+                        .requestMatchers("/api/v1/services/**").authenticated()
+                        .anyRequest().authenticated() // All other requests require authentication
+                )
+                // Add JWT filter before Spring Security's authentication filter
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -62,9 +69,8 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         // Allow both default Next.js ports (3000 and 3001)
         configuration.setAllowedOrigins(List.of(
-            "http://localhost:3000",
-            "http://localhost:3001"
-        ));
+                "http://localhost:3000",
+                "http://localhost:3001"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
