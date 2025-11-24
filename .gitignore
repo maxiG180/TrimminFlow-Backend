@@ -9,6 +9,9 @@ Thumbs.db
 
 .claude/
 
+# Documentation
+docs/
+
 # Project specific
 *.log
 nul
