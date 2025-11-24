@@ -16,19 +16,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Collections;
 
-/**
- * JWT Authentication Filter
- *
- * This filter intercepts every HTTP request and:
- * 1. Extracts the JWT token from httpOnly cookie OR Authorization header (fallback)
- * 2. Validates the token
- * 3. Sets the authentication in Spring Security context
- *
- * This allows Spring Security to know which user is making the request
- * and protect routes based on authentication status and roles.
- *
- * SECURITY: Prioritizes httpOnly cookies (XSS-protected) over Authorization header
- */
+// jwt authentication filter
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -42,12 +30,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain
-    ) throws ServletException, IOException {
+            @NonNull FilterChain filterChain) throws ServletException, IOException {
 
         String jwt = null;
 
-        // 1. Try to get token from httpOnly cookie (SECURE - preferred method)
+        // try to get token from httponly cookie
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
                 if ("accessToken".equals(cookie.getName())) {
@@ -57,7 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
-        // 2. Fallback: Get token from Authorization header (for backward compatibility)
+        // fallback: get token from auth header
         if (jwt == null) {
             final String authHeader = request.getHeader("Authorization");
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
@@ -65,7 +52,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
-        // If no token found, continue to next filter
+        // continue if no token found
         if (jwt == null) {
             filterChain.doFilter(request, response);
             return;
@@ -73,38 +60,35 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
 
-            // Extract user information from token
+            // extract user info from token
             final String userEmail = jwtUtil.extractEmail(jwt);
             final String role = jwtUtil.extractRole(jwt);
 
-            // If email is valid and user is not already authenticated
+            // if valid and not authenticated
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                // Validate the token
+                // validate token
                 if (jwtUtil.validateToken(jwt, userEmail)) {
 
-                    // Create authentication token with user's role
+                    // create auth token with role
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userEmail,
-                        null,
-                        Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
-                    );
+                            userEmail,
+                            null,
+                            Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role)));
 
-                    // Set additional details from the request
+                    // set request details
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                    // Set the authentication in the security context
-                    // This tells Spring Security that this user is authenticated
+                    // set authentication in context
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
         } catch (Exception e) {
-            // If token is invalid or expired, do nothing
-            // User will be treated as unauthenticated
+            // invalid token, treat as unauthenticated
             logger.error("JWT authentication failed: " + e.getMessage());
         }
 
-        // Continue to the next filter
+        // continue to next filter
         filterChain.doFilter(request, response);
     }
 }

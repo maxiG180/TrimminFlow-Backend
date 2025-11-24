@@ -19,12 +19,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * ServiceManagementService
- *
- * Business logic for managing barbershop services
- * Handles CRUD operations for services
- */
+// service management service
 @org.springframework.stereotype.Service
 public class ServiceManagementService {
 
@@ -37,35 +32,29 @@ public class ServiceManagementService {
         this.barbershopRepository = barbershopRepository;
     }
 
-    /**
-     * Create a new service for a barbershop
-     *
-     * @param barbershopId The barbershop's UUID
-     * @param request      Service creation data
-     * @return ServiceResponse with created service details
-     */
+    // create new service
     @Transactional
     public ServiceResponse createService(UUID barbershopId, CreateServiceRequest request) {
-        // Find the barbershop
+        // find barbershop
         Barbershop barbershop = barbershopRepository.findById(barbershopId)
                 .orElseThrow(() -> new RuntimeException("Barbershop not found"));
 
-        // Validate: Check for duplicate service name
+        // check duplicate name
         if (serviceRepository.existsByNameAndBarbershopId(request.getName(), barbershopId)) {
             throw new RuntimeException("A service with this name already exists");
         }
 
-        // Validate: Price should be positive
+        // validate price
         if (request.getPrice().doubleValue() < 0) {
             throw new RuntimeException("Price must be a positive value");
         }
 
-        // Validate: Duration should be reasonable (between 5 and 480 minutes = 8 hours)
+        // validate duration
         if (request.getDurationMinutes() < 5 || request.getDurationMinutes() > 480) {
             throw new RuntimeException("Duration must be between 5 and 480 minutes");
         }
 
-        // Create new service
+        // create service
         Service service = new Service(
                 barbershop,
                 request.getName().trim(),
@@ -73,19 +62,14 @@ public class ServiceManagementService {
                 request.getPrice(),
                 request.getDurationMinutes());
 
-        // Save to database
+        // save to database
         Service savedService = serviceRepository.save(service);
 
-        // Return response DTO
+        // return response
         return new ServiceResponse(savedService);
     }
 
-    /**
-     * Get all services for a barbershop (non-paginated for backward compatibility)
-     *
-     * @param barbershopId The barbershop's UUID
-     * @return List of ServiceResponse
-     */
+    // get all services non-paginated
     @Transactional(readOnly = true)
     public List<ServiceResponse> getAllServices(UUID barbershopId) {
         List<Service> services = serviceRepository.findByBarbershopId(barbershopId);
@@ -94,14 +78,7 @@ public class ServiceManagementService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Get all services for a barbershop with pagination
-     *
-     * @param barbershopId The barbershop's UUID
-     * @param page         Page number (0-indexed)
-     * @param size         Page size
-     * @return PageResponse containing ServiceResponse list
-     */
+    // get all services paginated
     @Transactional(readOnly = true)
     public PageResponse<ServiceResponse> getAllServicesPaginated(UUID barbershopId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
@@ -110,12 +87,7 @@ public class ServiceManagementService {
         return PaginationUtils.createPageResponse(servicePage, ServiceResponse::new);
     }
 
-    /**
-     * Get all active services for a barbershop (non-paginated)
-     *
-     * @param barbershopId The barbershop's UUID
-     * @return List of active ServiceResponse
-     */
+    // get active services non-paginated
     @Transactional(readOnly = true)
     public List<ServiceResponse> getActiveServices(UUID barbershopId) {
         List<Service> services = serviceRepository.findByBarbershopIdAndIsActive(barbershopId, true);
@@ -124,14 +96,7 @@ public class ServiceManagementService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Get all active services for a barbershop with pagination
-     *
-     * @param barbershopId The barbershop's UUID
-     * @param page         Page number (0-indexed)
-     * @param size         Page size
-     * @return PageResponse containing active ServiceResponse list
-     */
+    // get active services paginated
     @Transactional(readOnly = true)
     public PageResponse<ServiceResponse> getActiveServicesPaginated(UUID barbershopId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
@@ -140,22 +105,13 @@ public class ServiceManagementService {
         return PaginationUtils.createPageResponse(servicePage, ServiceResponse::new);
     }
 
-    /**
-     * Search services by name or description with pagination
-     *
-     * @param barbershopId The barbershop's UUID
-     * @param searchTerm   The search term
-     * @param page         Page number (0-indexed)
-     * @param size         Page size
-     * @param activeOnly   If true, only return active services
-     * @return PageResponse containing matching ServiceResponse list
-     */
+    // search services by name or description
     @Transactional(readOnly = true)
     public PageResponse<ServiceResponse> searchServices(UUID barbershopId, String searchTerm, int page, int size,
             boolean activeOnly) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
-        // If search term is empty, return all services
+        // return all if empty search
         if (searchTerm == null || searchTerm.trim().isEmpty()) {
             return activeOnly ? getActiveServicesPaginated(barbershopId, page, size)
                     : getAllServicesPaginated(barbershopId, page, size);
@@ -168,40 +124,27 @@ public class ServiceManagementService {
         return PaginationUtils.createPageResponse(servicePage, ServiceResponse::new);
     }
 
-    /**
-     * Get a specific service by ID
-     *
-     * @param serviceId    The service's UUID
-     * @param barbershopId The barbershop's UUID (for authorization)
-     * @return ServiceResponse
-     */
+    // get service by id
     @Transactional(readOnly = true)
     public ServiceResponse getService(UUID serviceId, UUID barbershopId) {
-        // Use optimized query that checks both ID and barbershop in one query
+        // find service with auth check
         Service service = serviceRepository.findByIdAndBarbershopId(serviceId, barbershopId)
                 .orElseThrow(() -> new RuntimeException("Service not found or does not belong to this barbershop"));
 
         return new ServiceResponse(service);
     }
 
-    /**
-     * Update an existing service
-     *
-     * @param serviceId    The service's UUID
-     * @param barbershopId The barbershop's UUID (for authorization)
-     * @param request      Update data (only provided fields will be updated)
-     * @return ServiceResponse with updated service details
-     */
+    // update service
     @Transactional
     public ServiceResponse updateService(UUID serviceId, UUID barbershopId, UpdateServiceRequest request) {
-        // Find the service with authorization check
+        // find service with auth check
         Service service = serviceRepository.findByIdAndBarbershopId(serviceId, barbershopId)
                 .orElseThrow(() -> new RuntimeException("Service not found or does not belong to this barbershop"));
 
-        // Update only provided fields with validation
+        // update fields with validation
         if (request.getName() != null) {
             String trimmedName = request.getName().trim();
-            // Check for duplicate name (excluding current service)
+            // check duplicate name
             if (serviceRepository.existsByNameAndBarbershopIdExcludingId(trimmedName, barbershopId, serviceId)) {
                 throw new RuntimeException("A service with this name already exists");
             }
@@ -230,46 +173,34 @@ public class ServiceManagementService {
             service.setIsActive(request.getIsActive());
         }
 
-        // Save updated service
+        // save updated service
         Service updatedService = serviceRepository.save(service);
 
         return new ServiceResponse(updatedService);
     }
 
-    /**
-     * Delete a service (soft delete by setting isActive = false)
-     *
-     * @param serviceId    The service's UUID
-     * @param barbershopId The barbershop's UUID (for authorization)
-     */
+    // delete service (soft)
     @Transactional
     public void deleteService(UUID serviceId, UUID barbershopId) {
-        // Find the service with authorization check
+        // find service with auth check
         Service service = serviceRepository.findByIdAndBarbershopId(serviceId, barbershopId)
                 .orElseThrow(() -> new RuntimeException("Service not found or does not belong to this barbershop"));
 
-        // Soft delete (set isActive to false)
+        // soft delete
         service.setIsActive(false);
         serviceRepository.save(service);
     }
 
-    /**
-     * Hard delete a service (permanent deletion)
-     * Note: This should check for existing appointments before deletion
-     *
-     * @param serviceId    The service's UUID
-     * @param barbershopId The barbershop's UUID (for authorization)
-     */
+    // hard delete service
     @Transactional
     public void hardDeleteService(UUID serviceId, UUID barbershopId) {
-        // Find the service with authorization check
+        // find service with auth check
         Service service = serviceRepository.findByIdAndBarbershopId(serviceId, barbershopId)
                 .orElseThrow(() -> new RuntimeException("Service not found or does not belong to this barbershop"));
 
-        // TODO: Add check for existing appointments using this service
-        // If appointments exist, throw exception or prevent deletion
+        // todo: check for existing appointments
 
-        // Hard delete (permanent)
+        // hard delete
         serviceRepository.delete(service);
     }
 }

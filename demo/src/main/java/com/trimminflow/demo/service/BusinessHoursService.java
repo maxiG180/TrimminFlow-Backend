@@ -21,35 +21,36 @@ public class BusinessHoursService {
     private final BusinessHoursRepository businessHoursRepository;
     private final BarbershopRepository barbershopRepository;
 
-    public BusinessHoursService(BusinessHoursRepository businessHoursRepository, BarbershopRepository barbershopRepository) {
+    public BusinessHoursService(BusinessHoursRepository businessHoursRepository,
+            BarbershopRepository barbershopRepository) {
         this.businessHoursRepository = businessHoursRepository;
         this.barbershopRepository = barbershopRepository;
     }
 
     @Transactional
     public BusinessHoursResponse setBusinessHours(UUID barbershopId, SetBusinessHoursRequest request) {
-        // Validate barbershop exists
+        // validate barbershop exists
         Barbershop barbershop = barbershopRepository.findById(barbershopId)
                 .orElseThrow(() -> new RuntimeException("Barbershop not found"));
 
-        // Get day of week enum
+        // get day of week enum
         DayOfWeek dayOfWeek = request.getDayOfWeek();
         if (dayOfWeek == null) {
             throw new RuntimeException("Day of week is required");
         }
 
-        // Validate isOpen is provided
+        // validate isOpen provided
         if (request.getIsOpen() == null) {
             throw new RuntimeException("isOpen field is required");
         }
 
-        // If shop is open, validate time range
+        // validate time range if open
         if (request.getIsOpen()) {
             if (request.getOpenTime() == null || request.getCloseTime() == null) {
                 throw new RuntimeException("Open and close times are required when shop is marked as open");
             }
 
-            // Validate that open time is before close time
+            // validate open before close
             LocalTime openTime = request.getOpenTime();
             LocalTime closeTime = request.getCloseTime();
 
@@ -61,36 +62,36 @@ public class BusinessHoursService {
                 throw new RuntimeException("Open time must be before close time");
             }
 
-            // Validate reasonable business hours (optional, but good practice)
-            // Minimum 1 hour operation
+            // minimum 1 hour operation
             if (openTime.plusHours(1).isAfter(closeTime)) {
                 throw new RuntimeException("Business must be open for at least 1 hour");
             }
 
-            // Maximum 24 hours operation (sanity check)
+            // maximum 24 hours check
             if (openTime.equals(LocalTime.MIDNIGHT) && closeTime.equals(LocalTime.MIDNIGHT)) {
                 throw new RuntimeException("Invalid 24-hour operation time range");
             }
         }
 
-        // Find existing or create new business hours
+        // find existing or create new
         BusinessHours businessHours = businessHoursRepository
                 .findByBarbershopIdAndDayOfWeek(barbershopId, dayOfWeek)
-                .orElse(new BusinessHours(barbershop, dayOfWeek, request.getIsOpen(), request.getOpenTime(), request.getCloseTime()));
+                .orElse(new BusinessHours(barbershop, dayOfWeek, request.getIsOpen(), request.getOpenTime(),
+                        request.getCloseTime()));
 
-        // Set day of week for new entities
+        // set day of week for new entities
         businessHours.setDayOfWeek(dayOfWeek);
         businessHours.setBarbershop(barbershop);
 
-        // Update the business hours
+        // update business hours
         businessHours.setIsOpen(request.getIsOpen());
 
-        // Only set times if shop is open
+        // set times if open
         if (request.getIsOpen()) {
             businessHours.setOpenTime(request.getOpenTime());
             businessHours.setCloseTime(request.getCloseTime());
         } else {
-            // Clear times if shop is closed
+            // clear times if closed
             businessHours.setOpenTime(null);
             businessHours.setCloseTime(null);
         }

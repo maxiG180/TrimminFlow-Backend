@@ -20,11 +20,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * BarberManagementService
- *
- * Business logic for managing barbers
- */
+// barber management service
 @Service
 public class BarberManagementService {
 
@@ -36,16 +32,14 @@ public class BarberManagementService {
         this.barbershopRepository = barbershopRepository;
     }
 
-    /**
-     * Create a new barber
-     */
+    // create new barber
     @Transactional
     public BarberResponse createBarber(UUID barbershopId, CreateBarberRequest request) {
-        // Validate barbershop exists
+        // validate barbershop exists
         Barbershop barbershop = barbershopRepository.findById(barbershopId)
                 .orElseThrow(() -> new RuntimeException("Barbershop not found"));
 
-        // Validate: Trim and check names
+        // validate names
         String firstName = request.getFirstName().trim();
         String lastName = request.getLastName().trim();
 
@@ -53,7 +47,7 @@ public class BarberManagementService {
             throw new RuntimeException("First name and last name cannot be empty");
         }
 
-        // Check if email already exists (if provided)
+        // check email exists
         if (request.getEmail() != null && !request.getEmail().trim().isEmpty()) {
             String trimmedEmail = request.getEmail().trim();
             if (barberRepository.existsByEmailAndBarbershopId(trimmedEmail, barbershopId)) {
@@ -61,7 +55,7 @@ public class BarberManagementService {
             }
         }
 
-        // Create barber
+        // create barber
         Barber barber = new Barber(
                 barbershop,
                 firstName,
@@ -70,7 +64,7 @@ public class BarberManagementService {
                 request.getPhone() != null ? request.getPhone().trim() : null,
                 request.getBio() != null ? request.getBio().trim() : null);
 
-        // Set profile image URL if provided
+        // set profile image if provided
         if (request.getProfileImageUrl() != null && !request.getProfileImageUrl().trim().isEmpty()) {
             barber.setProfileImageUrl(request.getProfileImageUrl().trim());
         }
@@ -79,9 +73,7 @@ public class BarberManagementService {
         return new BarberResponse(savedBarber);
     }
 
-    /**
-     * Get all barbers for a barbershop (paginated)
-     */
+    // get all barbers paginated
     @Transactional(readOnly = true)
     public PageResponse<BarberResponse> getAllBarbersPaginated(UUID barbershopId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
@@ -90,9 +82,7 @@ public class BarberManagementService {
         return PaginationUtils.createPageResponse(barberPage, BarberResponse::new);
     }
 
-    /**
-     * Get all barbers for a barbershop (non-paginated - for backward compatibility)
-     */
+    // get all barbers non-paginated
     @Transactional(readOnly = true)
     public List<BarberResponse> getAllBarbers(UUID barbershopId) {
         List<Barber> barbers = barberRepository.findByBarbershopId(barbershopId);
@@ -101,9 +91,7 @@ public class BarberManagementService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Get all active barbers for a barbershop (paginated)
-     */
+    // get active barbers paginated
     @Transactional(readOnly = true)
     public PageResponse<BarberResponse> getActiveBarbersPaginated(UUID barbershopId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
@@ -112,10 +100,7 @@ public class BarberManagementService {
         return PaginationUtils.createPageResponse(barberPage, BarberResponse::new);
     }
 
-    /**
-     * Get all active barbers for a barbershop (non-paginated - for backward
-     * compatibility)
-     */
+    // get active barbers non-paginated
     @Transactional(readOnly = true)
     public List<BarberResponse> getActiveBarbers(UUID barbershopId) {
         List<Barber> barbers = barberRepository.findByBarbershopIdAndIsActiveTrue(barbershopId);
@@ -124,22 +109,13 @@ public class BarberManagementService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Search barbers by name or email with pagination
-     *
-     * @param barbershopId The barbershop's UUID
-     * @param searchTerm   The search term
-     * @param page         Page number (0-indexed)
-     * @param size         Page size
-     * @param activeOnly   If true, only return active barbers
-     * @return PageResponse containing matching BarberResponse list
-     */
+    // search barbers by name or email
     @Transactional(readOnly = true)
     public PageResponse<BarberResponse> searchBarbers(UUID barbershopId, String searchTerm, int page, int size,
             boolean activeOnly) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
-        // If search term is empty, return all barbers
+        // return all if empty search
         if (searchTerm == null || searchTerm.trim().isEmpty()) {
             return activeOnly ? getActiveBarbersPaginated(barbershopId, page, size)
                     : getAllBarbersPaginated(barbershopId, page, size);
@@ -152,9 +128,7 @@ public class BarberManagementService {
         return PaginationUtils.createPageResponse(barberPage, BarberResponse::new);
     }
 
-    /**
-     * Get a specific barber
-     */
+    // get barber by id
     @Transactional(readOnly = true)
     public BarberResponse getBarber(UUID barberId, UUID barbershopId) {
         Barber barber = barberRepository.findByIdAndBarbershopId(barberId, barbershopId)
@@ -162,15 +136,13 @@ public class BarberManagementService {
         return new BarberResponse(barber);
     }
 
-    /**
-     * Update a barber
-     */
+    // update barber
     @Transactional
     public BarberResponse updateBarber(UUID barberId, UUID barbershopId, UpdateBarberRequest request) {
         Barber barber = barberRepository.findByIdAndBarbershopId(barberId, barbershopId)
                 .orElseThrow(() -> new RuntimeException("Barber not found"));
 
-        // Update fields if provided with validation
+        // update fields if provided
         if (request.getFirstName() != null) {
             String trimmedFirstName = request.getFirstName().trim();
             if (trimmedFirstName.isEmpty()) {
@@ -189,7 +161,7 @@ public class BarberManagementService {
 
         if (request.getEmail() != null) {
             String trimmedEmail = request.getEmail().trim();
-            // Check for duplicate email (excluding current barber)
+            // check duplicate email
             if (!trimmedEmail.isEmpty() &&
                     barberRepository.existsByEmailAndBarbershopIdExcludingId(trimmedEmail, barbershopId, barberId)) {
                 throw new RuntimeException("Email already exists for another barber in this barbershop");
@@ -218,36 +190,25 @@ public class BarberManagementService {
         return new BarberResponse(updatedBarber);
     }
 
-    /**
-     * Delete a barber (soft delete - set isActive to false)
-     */
+    // delete barber (soft)
     @Transactional
     public void deleteBarber(UUID barberId, UUID barbershopId) {
         Barber barber = barberRepository.findByIdAndBarbershopId(barberId, barbershopId)
                 .orElseThrow(() -> new RuntimeException("Barber not found"));
 
-        // TODO: Add check for existing appointments with this barber
-        // If appointments exist, you may want to:
-        // 1. Prevent deletion and throw exception
-        // 2. Reassign appointments to another barber
-        // 3. Cancel future appointments
+        // todo: check for existing appointments
 
         barber.setIsActive(false);
         barberRepository.save(barber);
     }
 
-    /**
-     * Permanently delete a barber
-     * Note: This should check for existing appointments before deletion
-     */
+    // hard delete barber
     @Transactional
     public void hardDeleteBarber(UUID barberId, UUID barbershopId) {
         Barber barber = barberRepository.findByIdAndBarbershopId(barberId, barbershopId)
                 .orElseThrow(() -> new RuntimeException("Barber not found"));
 
-        // TODO: Add check for existing appointments with this barber
-        // Hard deletion should probably be prevented if appointments exist
-        // Consider soft delete instead
+        // todo: check for existing appointments
 
         barberRepository.delete(barber);
     }
