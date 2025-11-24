@@ -16,14 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * ServiceController
- *
- * REST API endpoints for managing barbershop services
- *
- * All endpoints require authentication (JWT token)
- * The barbershopId is extracted from the authenticated user's context
- */
+// service management endpoints
 @RestController
 @RequestMapping("/api/v1/services")
 @Tag(name = "Services", description = "Service management APIs")
@@ -35,115 +28,66 @@ public class ServiceController {
         this.serviceManagementService = serviceManagementService;
     }
 
-    /**
-     * Create a new service
-     *
-     * POST /api/v1/services
-     *
-     * Request Body:
-     * {
-     *   "name": "Haircut",
-     *   "description": "Professional haircut",
-     *   "price": 15.00,
-     *   "durationMinutes": 30
-     * }
-     */
+    // create new service
     @PostMapping
-    @Operation(
-        summary = "Create a new service",
-        description = "Create a new service for the authenticated user's barbershop"
-    )
+    @Operation(summary = "Create a new service", description = "Create a new service for the authenticated user's barbershop")
     public ResponseEntity<?> createService(
-        @Valid @RequestBody CreateServiceRequest request,
-        @RequestHeader("X-Barbershop-Id") UUID barbershopId
-    ) {
+            @Valid @RequestBody CreateServiceRequest request,
+            @RequestHeader("X-Barbershop-Id") UUID barbershopId) {
         try {
             ServiceResponse response = serviceManagementService.createService(barbershopId, request);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest()
-                .body(new ErrorResponse("Service creation failed", e.getMessage()));
+                    .body(new ErrorResponse("Service creation failed", e.getMessage()));
         }
     }
 
-    /**
-     * Get all services for the barbershop (non-paginated)
-     *
-     * GET /api/v1/services/all
-     */
+    // get all services non-paginated
     @GetMapping("/all")
-    @Operation(
-        summary = "Get all services",
-        description = "Get all services for the authenticated user's barbershop (non-paginated)"
-    )
+    @Operation(summary = "Get all services", description = "Get all services for the authenticated user's barbershop (non-paginated)")
     public ResponseEntity<List<ServiceResponse>> getAllServices(
-        @RequestHeader("X-Barbershop-Id") UUID barbershopId
-    ) {
+            @RequestHeader("X-Barbershop-Id") UUID barbershopId) {
         List<ServiceResponse> services = serviceManagementService.getAllServices(barbershopId);
         return ResponseEntity.ok(services);
     }
 
-    /**
-     * Get services with pagination and optional search
-     *
-     * GET /api/v1/services?page=0&size=10&search=haircut&activeOnly=true
-     */
+    // get services with pagination
     @GetMapping
-    @Operation(
-        summary = "Get services with pagination",
-        description = "Get paginated services with optional search by name or description"
-    )
+    @Operation(summary = "Get services with pagination", description = "Get paginated services with optional search by name or description")
     public ResponseEntity<PageResponse<ServiceResponse>> getServicesPaginated(
-        @RequestHeader("X-Barbershop-Id") UUID barbershopId,
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size,
-        @RequestParam(required = false) String search,
-        @RequestParam(defaultValue = "false") boolean activeOnly
-    ) {
+            @RequestHeader("X-Barbershop-Id") UUID barbershopId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "false") boolean activeOnly) {
         PageResponse<ServiceResponse> response;
 
         if (search != null && !search.trim().isEmpty()) {
             response = serviceManagementService.searchServices(barbershopId, search, page, size, activeOnly);
         } else {
-            response = activeOnly ?
-                serviceManagementService.getActiveServicesPaginated(barbershopId, page, size) :
-                serviceManagementService.getAllServicesPaginated(barbershopId, page, size);
+            response = activeOnly ? serviceManagementService.getActiveServicesPaginated(barbershopId, page, size)
+                    : serviceManagementService.getAllServicesPaginated(barbershopId, page, size);
         }
 
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Get all active services for the barbershop
-     *
-     * GET /api/v1/services/active
-     */
+    // get active services
     @GetMapping("/active")
-    @Operation(
-        summary = "Get active services",
-        description = "Get all active services for the authenticated user's barbershop"
-    )
+    @Operation(summary = "Get active services", description = "Get all active services for the authenticated user's barbershop")
     public ResponseEntity<List<ServiceResponse>> getActiveServices(
-        @RequestHeader("X-Barbershop-Id") UUID barbershopId
-    ) {
+            @RequestHeader("X-Barbershop-Id") UUID barbershopId) {
         List<ServiceResponse> services = serviceManagementService.getActiveServices(barbershopId);
         return ResponseEntity.ok(services);
     }
 
-    /**
-     * Get a specific service by ID
-     *
-     * GET /api/v1/services/{id}
-     */
+    // get service by id
     @GetMapping("/{id}")
-    @Operation(
-        summary = "Get service by ID",
-        description = "Get a specific service by its ID"
-    )
+    @Operation(summary = "Get service by ID", description = "Get a specific service by its ID")
     public ResponseEntity<ServiceResponse> getService(
-        @PathVariable UUID id,
-        @RequestHeader("X-Barbershop-Id") UUID barbershopId
-    ) {
+            @PathVariable UUID id,
+            @RequestHeader("X-Barbershop-Id") UUID barbershopId) {
         try {
             ServiceResponse service = serviceManagementService.getService(id, barbershopId);
             return ResponseEntity.ok(service);
@@ -152,52 +96,28 @@ public class ServiceController {
         }
     }
 
-    /**
-     * Update a service
-     *
-     * PUT /api/v1/services/{id}
-     *
-     * Request Body (all fields optional):
-     * {
-     *   "name": "Updated Haircut",
-     *   "price": 20.00,
-     *   "durationMinutes": 45,
-     *   "isActive": true
-     * }
-     */
+    // update service
     @PutMapping("/{id}")
-    @Operation(
-        summary = "Update a service",
-        description = "Update an existing service. Only provided fields will be updated."
-    )
+    @Operation(summary = "Update a service", description = "Update an existing service. Only provided fields will be updated.")
     public ResponseEntity<?> updateService(
-        @PathVariable UUID id,
-        @Valid @RequestBody UpdateServiceRequest request,
-        @RequestHeader("X-Barbershop-Id") UUID barbershopId
-    ) {
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateServiceRequest request,
+            @RequestHeader("X-Barbershop-Id") UUID barbershopId) {
         try {
             ServiceResponse response = serviceManagementService.updateService(id, barbershopId, request);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest()
-                .body(new ErrorResponse("Service update failed", e.getMessage()));
+                    .body(new ErrorResponse("Service update failed", e.getMessage()));
         }
     }
 
-    /**
-     * Delete a service (soft delete)
-     *
-     * DELETE /api/v1/services/{id}
-     */
+    // delete service (soft)
     @DeleteMapping("/{id}")
-    @Operation(
-        summary = "Delete a service",
-        description = "Soft delete a service (sets isActive to false)"
-    )
+    @Operation(summary = "Delete a service", description = "Soft delete a service (sets isActive to false)")
     public ResponseEntity<Void> deleteService(
-        @PathVariable UUID id,
-        @RequestHeader("X-Barbershop-Id") UUID barbershopId
-    ) {
+            @PathVariable UUID id,
+            @RequestHeader("X-Barbershop-Id") UUID barbershopId) {
         try {
             serviceManagementService.deleteService(id, barbershopId);
             return ResponseEntity.noContent().build();
@@ -206,20 +126,12 @@ public class ServiceController {
         }
     }
 
-    /**
-     * Hard delete a service (permanent)
-     *
-     * DELETE /api/v1/services/{id}/hard
-     */
+    // hard delete service
     @DeleteMapping("/{id}/hard")
-    @Operation(
-        summary = "Permanently delete a service",
-        description = "Hard delete a service (permanent deletion)"
-    )
+    @Operation(summary = "Permanently delete a service", description = "Hard delete a service (permanent deletion)")
     public ResponseEntity<Void> hardDeleteService(
-        @PathVariable UUID id,
-        @RequestHeader("X-Barbershop-Id") UUID barbershopId
-    ) {
+            @PathVariable UUID id,
+            @RequestHeader("X-Barbershop-Id") UUID barbershopId) {
         try {
             serviceManagementService.hardDeleteService(id, barbershopId);
             return ResponseEntity.noContent().build();
