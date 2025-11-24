@@ -20,13 +20,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * REST Controller for Appointment management
- *
- * Provides endpoints for creating, reading, updating, and cancelling
- * appointments
- * Requires X-Barbershop-Id header for all requests
- */
+// appointment management endpoints
 @RestController
 @RequestMapping("/api/v1/appointments")
 public class AppointmentController {
@@ -37,11 +31,7 @@ public class AppointmentController {
         this.appointmentService = appointmentService;
     }
 
-    /**
-     * Create a new appointment
-     *
-     * POST /api/v1/appointments
-     */
+    // create new appointment
     @PostMapping
     public ResponseEntity<AppointmentResponse> createAppointment(
             @RequestHeader("X-Barbershop-Id") UUID barbershopId,
@@ -51,12 +41,7 @@ public class AppointmentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    /**
-     * Get all appointments with optional filters
-     *
-     * GET
-     * /api/v1/appointments?barberId=xxx&startDate=2025-11-21&endDate=2025-11-22&status=PENDING
-     */
+    // get appointments with filters
     @GetMapping
     public ResponseEntity<Page<AppointmentResponse>> getAppointments(
             @RequestHeader("X-Barbershop-Id") UUID barbershopId,
@@ -74,11 +59,7 @@ public class AppointmentController {
         return ResponseEntity.ok(appointments);
     }
 
-    /**
-     * Get a specific appointment by ID
-     *
-     * GET /api/v1/appointments/{id}
-     */
+    // get appointment by id
     @GetMapping("/{id}")
     public ResponseEntity<AppointmentResponse> getAppointmentById(
             @RequestHeader("X-Barbershop-Id") UUID barbershopId,
@@ -88,11 +69,7 @@ public class AppointmentController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Update an existing appointment
-     *
-     * PUT /api/v1/appointments/{id}
-     */
+    // update appointment
     @PutMapping("/{id}")
     public ResponseEntity<AppointmentResponse> updateAppointment(
             @RequestHeader("X-Barbershop-Id") UUID barbershopId,
@@ -103,11 +80,7 @@ public class AppointmentController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Cancel an appointment
-     *
-     * DELETE /api/v1/appointments/{id}
-     */
+    // cancel appointment
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> cancelAppointment(
             @RequestHeader("X-Barbershop-Id") UUID barbershopId,
@@ -117,12 +90,7 @@ public class AppointmentController {
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Get available time slots for a barber on a specific date
-     *
-     * GET
-     * /api/v1/appointments/availability?barberId=xxx&date=2025-11-21&serviceDuration=30
-     */
+    // get available time slots
     @GetMapping("/availability")
     public ResponseEntity<List<LocalDateTime>> getAvailableTimeSlots(
             @RequestParam UUID barberId,

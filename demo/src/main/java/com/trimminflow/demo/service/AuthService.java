@@ -25,9 +25,9 @@ public class AuthService {
     private final JwtUtil jwtUtil;
 
     public AuthService(BarbershopRepository barbershopRepository,
-                      UserRepository userRepository,
-                      PasswordEncoder passwordEncoder,
-                      JwtUtil jwtUtil) {
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            JwtUtil jwtUtil) {
         this.barbershopRepository = barbershopRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -36,12 +36,12 @@ public class AuthService {
 
     @Transactional
     public RegisterResponse registerBarbershopOwner(RegisterRequest request) {
-        // Check if email already exists
+        // check if email exists
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Email already registered");
         }
 
-        // Create barbershop
+        // create barbershop
         Barbershop barbershop = new Barbershop();
         barbershop.setName(request.getBarbershopName());
         barbershop.setEmail(request.getEmail());
@@ -49,7 +49,7 @@ public class AuthService {
         barbershop.setAddress(request.getAddress());
         Barbershop savedBarbershop = barbershopRepository.save(barbershop);
 
-        // Create owner user
+        // create owner user
         User owner = new User();
         owner.setEmail(request.getEmail());
         owner.setFirstName(request.getFirstName());
@@ -60,52 +60,43 @@ public class AuthService {
         User savedUser = userRepository.save(owner);
 
         return new RegisterResponse(
-            savedUser.getId(),
-            savedBarbershop.getId(),
-            savedUser.getEmail(),
-            "Barbershop registered successfully"
-        );
+                savedUser.getId(),
+                savedBarbershop.getId(),
+                savedUser.getEmail(),
+                "Barbershop registered successfully");
     }
 
-    /**
-     * Login a user and return JWT token
-     *
-     * @param request LoginRequest with email and password
-     * @return LoginResponse with JWT access token and user information
-     * @throws RuntimeException if credentials are invalid
-     */
+    // login user and return jwt
     @Transactional
     public LoginResponse login(LoginRequest request) {
-        // Find user by email
+        // find user by email
         User user = userRepository.findByEmail(request.getEmail())
-            .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
 
-        // Verify password
+        // verify password
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new RuntimeException("Invalid email or password");
         }
 
-        // Update last login time
+        // update last login
         user.setLastLogin(LocalDateTime.now());
         userRepository.save(user);
 
-        // Generate JWT token
+        // generate jwt token
         String accessToken = jwtUtil.generateToken(
-            user.getEmail(),
-            user.getId(),
-            user.getRole().name()
-        );
+                user.getEmail(),
+                user.getId(),
+                user.getRole().name());
 
-        // Return response with token and user info
+        // return response
         return new LoginResponse(
-            accessToken,
-            user.getId(),
-            user.getEmail(),
-            user.getFirstName(),
-            user.getLastName(),
-            user.getRole().name(),
-            user.getBarbershop().getId(),
-            "Login successful"
-        );
+                accessToken,
+                user.getId(),
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getRole().name(),
+                user.getBarbershop().getId(),
+                "Login successful");
     }
 }

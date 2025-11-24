@@ -7,20 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - name: Setup Java 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-    - name: Build
-      run: cd demo && chmod +x gradlew && ./gradlew assemble
-
-  unit-tests:
-    needs: build
+  build-test-analyze:
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -31,55 +18,31 @@ jobs:
           POSTGRES_PASSWORD: mx269518
         ports:
           - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    steps:
-    - uses: actions/checkout@v4
-    - name: Setup Java 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-    - name: Run Tests
-      env:
-        SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/trimminflow
-        SPRING_DATASOURCE_USERNAME: trimminflow_user
-        SPRING_DATASOURCE_PASSWORD: mx269518
-      run: cd demo && chmod +x gradlew && ./gradlew test jacocoTestReport
 
-  sonar:
-    needs: unit-tests
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_DB: trimminflow
-          POSTGRES_USER: trimminflow_user
-          POSTGRES_PASSWORD: mx269518
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
     steps:
     - uses: actions/checkout@v4
       with:
-        fetch-depth: 0
-    - name: Setup Java 17
+        fetch-depth: 0 
+
+    - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
-    - name: SonarQube Analysis
+
+    - name: Build, Test and Analyze
       env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/trimminflow
         SPRING_DATASOURCE_USERNAME: trimminflow_user
         SPRING_DATASOURCE_PASSWORD: mx269518
-      run: cd demo && chmod +x gradlew && ./gradlew build sonar
+      run: |
+        cd demo
+        chmod +x gradlew
+        ./gradlew build jacocoTestReport sonar
+
+    - name: Build Docker Image
+      run: |
+        cd demo
+        docker build -t trimminflow-backend .

@@ -29,14 +29,14 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // Disable CSRF as we use JWT which is immune to CSRF in this stateless architecture
-                .csrf(csrf -> csrf.disable()) 
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Enable CORS
+                // disable csrf for stateless jwt auth
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // enable cors
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // No sessions, JWT only
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // no sessions
                 )
                 .authorizeHttpRequests(auth -> auth
-                        // Public endpoints (no authentication required)
+                        // public endpoints
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
@@ -45,20 +45,20 @@ public class SecurityConfig {
                                 "/api/v1/auth/login",
                                 "/api/v1/auth/logout",
                                 "/api/v1/health",
-                                // Public Booking Endpoints
+                                // public booking endpoints
                                 "/api/v1/barbershops/{id}",
                                 "/api/v1/services/active",
                                 "/api/v1/barbers/active",
                                 "/api/v1/appointments/availability",
                                 "/api/v1/appointments")
                         .permitAll()
-                        // Protected endpoints (authentication required)
+                        // protected endpoints
                         .requestMatchers("/api/v1/barbershops/**").authenticated()
                         .requestMatchers("/api/v1/users/**").authenticated()
                         .requestMatchers("/api/v1/services/**").authenticated()
-                        .anyRequest().authenticated() // All other requests require authentication
+                        .anyRequest().authenticated() // all other requests require auth
                 )
-                // Add JWT filter before Spring Security's authentication filter
+                // add jwt filter
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
