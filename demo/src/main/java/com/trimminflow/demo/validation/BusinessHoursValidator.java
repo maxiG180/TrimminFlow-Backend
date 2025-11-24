@@ -32,7 +32,6 @@ public class BusinessHoursValidator implements ConstraintValidator<ValidBusiness
             return true;
         }
 
-        // Extract fields based on object type
         Boolean isOpen;
         LocalTime openTime;
         LocalTime closeTime;

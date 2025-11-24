@@ -2,11 +2,6 @@ package com.trimminflow.demo.dto;
 
 import com.trimminflow.demo.entity.Barber;
 
-/**
- * BarberResponse DTO
- *
- * Used when returning barber data to the frontend
- */
 public class BarberResponse extends BaseResponse {
 
     private String firstName;
@@ -16,7 +11,6 @@ public class BarberResponse extends BaseResponse {
     private String bio;
     private String profileImageUrl;
 
-    // Constructors
     public BarberResponse() {
     }
 
@@ -34,7 +28,6 @@ public class BarberResponse extends BaseResponse {
         this.setUpdatedAt(barber.getUpdatedAt());
     }
 
-    // Getters and Setters
     public String getFirstName() {
         return firstName;
     }
@@ -83,7 +76,6 @@ public class BarberResponse extends BaseResponse {
         this.profileImageUrl = profileImageUrl;
     }
 
-    // Helper method
     public String getFullName() {
         return firstName + " " + lastName;
     }

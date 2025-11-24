@@ -29,28 +29,23 @@ public class BusinessHoursService {
 
     @Transactional
     public BusinessHoursResponse setBusinessHours(UUID barbershopId, SetBusinessHoursRequest request) {
-        // validate barbershop exists
         Barbershop barbershop = barbershopRepository.findById(barbershopId)
                 .orElseThrow(() -> new RuntimeException("Barbershop not found"));
 
-        // get day of week enum
         DayOfWeek dayOfWeek = request.getDayOfWeek();
         if (dayOfWeek == null) {
             throw new RuntimeException("Day of week is required");
         }
 
-        // validate isOpen provided
         if (request.getIsOpen() == null) {
             throw new RuntimeException("isOpen field is required");
         }
 
-        // validate time range if open
         if (request.getIsOpen()) {
             if (request.getOpenTime() == null || request.getCloseTime() == null) {
                 throw new RuntimeException("Open and close times are required when shop is marked as open");
             }
 
-            // validate open before close
             LocalTime openTime = request.getOpenTime();
             LocalTime closeTime = request.getCloseTime();
 
@@ -73,25 +68,20 @@ public class BusinessHoursService {
             }
         }
 
-        // find existing or create new
         BusinessHours businessHours = businessHoursRepository
                 .findByBarbershopIdAndDayOfWeek(barbershopId, dayOfWeek)
                 .orElse(new BusinessHours(barbershop, dayOfWeek, request.getIsOpen(), request.getOpenTime(),
                         request.getCloseTime()));
 
-        // set day of week for new entities
         businessHours.setDayOfWeek(dayOfWeek);
         businessHours.setBarbershop(barbershop);
 
-        // update business hours
         businessHours.setIsOpen(request.getIsOpen());
 
-        // set times if open
         if (request.getIsOpen()) {
             businessHours.setOpenTime(request.getOpenTime());
             businessHours.setCloseTime(request.getCloseTime());
         } else {
-            // clear times if closed
             businessHours.setOpenTime(null);
             businessHours.setCloseTime(null);
         }

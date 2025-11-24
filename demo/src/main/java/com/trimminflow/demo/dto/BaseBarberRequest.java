@@ -4,11 +4,6 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-/**
- * BaseBarberRequest
- *
- * Base class for barber requests containing common fields and validations.
- */
 public class BaseBarberRequest {
 
     @Email(message = "Invalid email format")
@@ -24,7 +19,6 @@ public class BaseBarberRequest {
     @Size(max = 500, message = "Image URL must be less than 500 characters")
     private String profileImageUrl;
 
-    // Getters and Setters
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 

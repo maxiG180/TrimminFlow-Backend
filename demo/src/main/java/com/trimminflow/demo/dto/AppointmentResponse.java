@@ -178,11 +178,9 @@ public class AppointmentResponse {
         return response;
     }
 
-    // Constructors
     public AppointmentResponse() {
     }
 
-    // Getters and Setters
     public UUID getId() {
         return id;
     }

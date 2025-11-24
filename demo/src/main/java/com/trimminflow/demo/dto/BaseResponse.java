@@ -3,11 +3,6 @@ package com.trimminflow.demo.dto;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-/**
- * BaseResponse DTO
- *
- * Base class for response DTOs containing common fields.
- */
 public class BaseResponse {
 
     private UUID id;
@@ -16,7 +11,6 @@ public class BaseResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    // Getters and Setters
     public UUID getId() {
         return id;
     }

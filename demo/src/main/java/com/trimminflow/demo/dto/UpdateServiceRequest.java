@@ -10,11 +10,9 @@ public class UpdateServiceRequest extends BaseServiceRequest {
 
     private Boolean isActive;
 
-    // Constructors
     public UpdateServiceRequest() {
     }
 
-    // Getters and Setters
     public Boolean getIsActive() {
         return isActive;
     }

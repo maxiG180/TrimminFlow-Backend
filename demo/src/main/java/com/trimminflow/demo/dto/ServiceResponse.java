@@ -17,7 +17,6 @@ public class ServiceResponse extends BaseResponse {
     private BigDecimal price;
     private Integer durationMinutes;
 
-    // Constructors
     public ServiceResponse() {
     }
 
@@ -33,7 +32,6 @@ public class ServiceResponse extends BaseResponse {
         this.setUpdatedAt(service.getUpdatedAt());
     }
 
-    // Getters and Setters
     public String getName() {
         return name;
     }

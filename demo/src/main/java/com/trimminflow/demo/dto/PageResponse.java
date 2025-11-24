@@ -18,7 +18,6 @@ public class PageResponse<T> {
     private boolean first;
     private boolean last;
 
-    // Constructors
     public PageResponse() {}
 
     public PageResponse(List<T> content, int pageNumber, int pageSize, long totalElements, int totalPages) {
@@ -31,7 +30,6 @@ public class PageResponse<T> {
         this.last = pageNumber == totalPages - 1;
     }
 
-    // Getters and Setters
     public List<T> getContent() {
         return content;
     }

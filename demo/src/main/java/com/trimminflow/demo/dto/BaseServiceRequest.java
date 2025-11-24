@@ -4,11 +4,6 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import java.math.BigDecimal;
 
-/**
- * BaseServiceRequest
- *
- * Base class for service requests containing common fields.
- */
 public class BaseServiceRequest {
 
     private String name;
@@ -20,7 +15,6 @@ public class BaseServiceRequest {
     @Min(value = 1, message = "Duration must be at least 1 minute")
     private Integer durationMinutes;
 
-    // Getters and Setters
     public String getName() {
         return name;
     }

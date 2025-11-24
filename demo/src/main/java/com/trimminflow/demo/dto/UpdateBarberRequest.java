@@ -21,10 +21,8 @@ public class UpdateBarberRequest extends BaseBarberRequest {
 
     private Boolean isActive;
 
-    // Constructors
     public UpdateBarberRequest() {}
 
-    // Getters and Setters
     public String getFirstName() { return firstName; }
     public void setFirstName(String firstName) { this.firstName = firstName; }
 

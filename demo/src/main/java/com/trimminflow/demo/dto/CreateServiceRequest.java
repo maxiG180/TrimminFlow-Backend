@@ -4,14 +4,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
-/**
- * CreateServiceRequest DTO
- *
- * Used when creating a new service
- */
 public class CreateServiceRequest extends BaseServiceRequest {
 
-    // Constructors
     public CreateServiceRequest() {
     }
 
@@ -22,7 +16,6 @@ public class CreateServiceRequest extends BaseServiceRequest {
         this.setDurationMinutes(durationMinutes);
     }
 
-    // Validation overrides
     @Override
     @NotBlank(message = "Service name is required")
     public String getName() {

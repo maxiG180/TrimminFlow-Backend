@@ -4,11 +4,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-/**
- * CreateBarberRequest DTO
- *
- * Used when creating a new barber
- */
 public class CreateBarberRequest extends BaseBarberRequest {
 
     @NotBlank(message = "First name is required")
@@ -21,7 +16,6 @@ public class CreateBarberRequest extends BaseBarberRequest {
     @Pattern(regexp = "^[a-zA-Z\\s'-]+$", message = "Last name can only contain letters, spaces, hyphens, and apostrophes")
     private String lastName;
 
-    // Constructors
     public CreateBarberRequest() {}
 
     public CreateBarberRequest(String firstName, String lastName, String email, String phone, String bio, String profileImageUrl) {
@@ -33,7 +27,6 @@ public class CreateBarberRequest extends BaseBarberRequest {
         this.setProfileImageUrl(profileImageUrl);
     }
 
-    // Getters and Setters
     public String getFirstName() { return firstName; }
     public void setFirstName(String firstName) { this.firstName = firstName; }
 

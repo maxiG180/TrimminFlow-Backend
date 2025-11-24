@@ -24,7 +24,6 @@ public class UpdateAppointmentRequest {
     @Pattern(regexp = "^$|^[\\+]?[(]?[0-9]{1,3}[)]?[-\\s\\.]?[(]?[0-9]{1,4}[)]?[-\\s\\.]?[0-9]{1,4}[-\\s\\.]?[0-9]{1,9}$", message = "Please provide a valid phone number")
     private String customerPhone;
 
-    // Constructors
     public UpdateAppointmentRequest() {
     }
 
@@ -37,7 +36,6 @@ public class UpdateAppointmentRequest {
         this.customerPhone = customerPhone;
     }
 
-    // Getters and Setters
     public LocalDateTime getAppointmentDateTime() {
         return appointmentDateTime;
     }

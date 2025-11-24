@@ -92,7 +92,6 @@ public class Appointment {
         }
     }
 
-    // Constructors
     public Appointment() {
     }
 
@@ -109,7 +108,6 @@ public class Appointment {
         this.status = AppointmentStatus.PENDING;
     }
 
-    // Getters and Setters
     public UUID getId() {
         return id;
     }
@@ -223,15 +221,11 @@ public class Appointment {
             return false;
         }
 
-        // Check if time ranges overlap
         return this.appointmentDateTime.isBefore(other.endDateTime) &&
                 this.endDateTime.isAfter(other.appointmentDateTime);
     }
 
-    /**
-     * Check if appointment is active (not cancelled or completed)
-     */
-    public boolean isActive() {
+        public boolean isActive() {
         return status != AppointmentStatus.CANCELLED &&
                 status != AppointmentStatus.COMPLETED &&
                 status != AppointmentStatus.NO_SHOW;

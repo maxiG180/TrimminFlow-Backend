@@ -25,7 +25,6 @@ public class AuthController {
         this.authService = authService;
     }
 
-    // register new barbershop owner
     @PostMapping("/register")
     @Operation(summary = "Register new barbershop owner", description = "Register a new barbershop with an owner account. Creates both barbershop and owner user.")
     public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
@@ -38,7 +37,6 @@ public class AuthController {
         }
     }
 
-    // login user
     @PostMapping("/login")
     @Operation(summary = "Login user", description = "Authenticate a user with email and password. Sets JWT in httpOnly cookie for security.")
     public ResponseEntity<LoginResponse> login(
@@ -47,7 +45,6 @@ public class AuthController {
         try {
             LoginResponse loginResponse = authService.login(request);
 
-            // create httponly cookie with jwt
             org.springframework.http.ResponseCookie jwtCookie = org.springframework.http.ResponseCookie
                     .from("accessToken", loginResponse.getAccessToken())
                     .httpOnly(true)
@@ -59,7 +56,6 @@ public class AuthController {
 
             response.addHeader(org.springframework.http.HttpHeaders.SET_COOKIE, jwtCookie.toString());
 
-            // remove token from response body
             loginResponse.setAccessToken(null);
 
             return ResponseEntity.ok(loginResponse);
@@ -70,11 +66,9 @@ public class AuthController {
         }
     }
 
-    // logout user
     @PostMapping("/logout")
     @Operation(summary = "Logout user", description = "Clears the authentication cookie")
     public ResponseEntity<Void> logout(HttpServletResponse response) {
-        // clear cookie
         org.springframework.http.ResponseCookie jwtCookie = org.springframework.http.ResponseCookie
                 .from("accessToken", "")
                 .httpOnly(true)
@@ -89,11 +83,9 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-    // validate jwt token
     @GetMapping("/validate")
     @Operation(summary = "Validate JWT token", description = "Validates the JWT token from httpOnly cookie. Returns 200 if valid, 401 if invalid/expired.")
     public ResponseEntity<Void> validateToken() {
-        // token validated by filter
         return ResponseEntity.ok().build();
     }
 }

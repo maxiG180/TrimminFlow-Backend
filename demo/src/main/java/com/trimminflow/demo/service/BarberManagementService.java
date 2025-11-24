@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-// barber management service
 @Service
 public class BarberManagementService {
 
@@ -32,14 +31,11 @@ public class BarberManagementService {
         this.barbershopRepository = barbershopRepository;
     }
 
-    // create new barber
     @Transactional
     public BarberResponse createBarber(UUID barbershopId, CreateBarberRequest request) {
-        // validate barbershop exists
         Barbershop barbershop = barbershopRepository.findById(barbershopId)
                 .orElseThrow(() -> new RuntimeException("Barbershop not found"));
 
-        // validate names
         String firstName = request.getFirstName().trim();
         String lastName = request.getLastName().trim();
 
@@ -47,7 +43,6 @@ public class BarberManagementService {
             throw new RuntimeException("First name and last name cannot be empty");
         }
 
-        // check email exists
         if (request.getEmail() != null && !request.getEmail().trim().isEmpty()) {
             String trimmedEmail = request.getEmail().trim();
             if (barberRepository.existsByEmailAndBarbershopId(trimmedEmail, barbershopId)) {
@@ -55,7 +50,6 @@ public class BarberManagementService {
             }
         }
 
-        // create barber
         Barber barber = new Barber(
                 barbershop,
                 firstName,
@@ -64,7 +58,6 @@ public class BarberManagementService {
                 request.getPhone() != null ? request.getPhone().trim() : null,
                 request.getBio() != null ? request.getBio().trim() : null);
 
-        // set profile image if provided
         if (request.getProfileImageUrl() != null && !request.getProfileImageUrl().trim().isEmpty()) {
             barber.setProfileImageUrl(request.getProfileImageUrl().trim());
         }
@@ -73,7 +66,6 @@ public class BarberManagementService {
         return new BarberResponse(savedBarber);
     }
 
-    // get all barbers paginated
     @Transactional(readOnly = true)
     public PageResponse<BarberResponse> getAllBarbersPaginated(UUID barbershopId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
@@ -82,7 +74,6 @@ public class BarberManagementService {
         return PaginationUtils.createPageResponse(barberPage, BarberResponse::new);
     }
 
-    // get all barbers non-paginated
     @Transactional(readOnly = true)
     public List<BarberResponse> getAllBarbers(UUID barbershopId) {
         List<Barber> barbers = barberRepository.findByBarbershopId(barbershopId);
@@ -91,7 +82,6 @@ public class BarberManagementService {
                 .collect(Collectors.toList());
     }
 
-    // get active barbers paginated
     @Transactional(readOnly = true)
     public PageResponse<BarberResponse> getActiveBarbersPaginated(UUID barbershopId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
@@ -100,7 +90,6 @@ public class BarberManagementService {
         return PaginationUtils.createPageResponse(barberPage, BarberResponse::new);
     }
 
-    // get active barbers non-paginated
     @Transactional(readOnly = true)
     public List<BarberResponse> getActiveBarbers(UUID barbershopId) {
         List<Barber> barbers = barberRepository.findByBarbershopIdAndIsActiveTrue(barbershopId);
@@ -109,13 +98,11 @@ public class BarberManagementService {
                 .collect(Collectors.toList());
     }
 
-    // search barbers by name or email
     @Transactional(readOnly = true)
     public PageResponse<BarberResponse> searchBarbers(UUID barbershopId, String searchTerm, int page, int size,
             boolean activeOnly) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
-        // return all if empty search
         if (searchTerm == null || searchTerm.trim().isEmpty()) {
             return activeOnly ? getActiveBarbersPaginated(barbershopId, page, size)
                     : getAllBarbersPaginated(barbershopId, page, size);
@@ -128,7 +115,6 @@ public class BarberManagementService {
         return PaginationUtils.createPageResponse(barberPage, BarberResponse::new);
     }
 
-    // get barber by id
     @Transactional(readOnly = true)
     public BarberResponse getBarber(UUID barberId, UUID barbershopId) {
         Barber barber = barberRepository.findByIdAndBarbershopId(barberId, barbershopId)
@@ -136,13 +122,11 @@ public class BarberManagementService {
         return new BarberResponse(barber);
     }
 
-    // update barber
     @Transactional
     public BarberResponse updateBarber(UUID barberId, UUID barbershopId, UpdateBarberRequest request) {
         Barber barber = barberRepository.findByIdAndBarbershopId(barberId, barbershopId)
                 .orElseThrow(() -> new RuntimeException("Barber not found"));
 
-        // update fields if provided
         if (request.getFirstName() != null) {
             String trimmedFirstName = request.getFirstName().trim();
             if (trimmedFirstName.isEmpty()) {
@@ -161,7 +145,6 @@ public class BarberManagementService {
 
         if (request.getEmail() != null) {
             String trimmedEmail = request.getEmail().trim();
-            // check duplicate email
             if (!trimmedEmail.isEmpty() &&
                     barberRepository.existsByEmailAndBarbershopIdExcludingId(trimmedEmail, barbershopId, barberId)) {
                 throw new RuntimeException("Email already exists for another barber in this barbershop");
@@ -190,7 +173,6 @@ public class BarberManagementService {
         return new BarberResponse(updatedBarber);
     }
 
-    // delete barber (soft)
     @Transactional
     public void deleteBarber(UUID barberId, UUID barbershopId) {
         Barber barber = barberRepository.findByIdAndBarbershopId(barberId, barbershopId)
@@ -202,7 +184,6 @@ public class BarberManagementService {
         barberRepository.save(barber);
     }
 
-    // hard delete barber
     @Transactional
     public void hardDeleteBarber(UUID barberId, UUID barbershopId) {
         Barber barber = barberRepository.findByIdAndBarbershopId(barberId, barbershopId)

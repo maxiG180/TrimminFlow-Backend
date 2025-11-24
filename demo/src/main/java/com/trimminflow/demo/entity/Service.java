@@ -61,7 +61,6 @@ public class Service {
         updatedAt = LocalDateTime.now();
     }
 
-    // Constructors
     public Service() {}
 
     public Service(Barbershop barbershop, String name, String description, BigDecimal price, Integer durationMinutes) {
@@ -73,7 +72,6 @@ public class Service {
         this.isActive = true;
     }
 
-    // Getters and Setters
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
 

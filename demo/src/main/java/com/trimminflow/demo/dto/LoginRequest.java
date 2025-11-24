@@ -3,11 +3,6 @@ package com.trimminflow.demo.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
-/**
- * Login Request DTO
- *
- * Used when a user wants to login to their account
- */
 public class LoginRequest {
 
     @NotBlank(message = "Email is required")

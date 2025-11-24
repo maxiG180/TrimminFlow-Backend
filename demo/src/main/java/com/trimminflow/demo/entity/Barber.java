@@ -75,7 +75,6 @@ public class Barber {
         updatedAt = LocalDateTime.now();
     }
 
-    // Constructors
     public Barber() {}
 
     public Barber(Barbershop barbershop, String firstName, String lastName, String email, String phone, String bio) {
@@ -88,7 +87,6 @@ public class Barber {
         this.isActive = true;
     }
 
-    // Getters and Setters
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
 
@@ -122,7 +120,6 @@ public class Barber {
     public String getProfileImageUrl() { return profileImageUrl; }
     public void setProfileImageUrl(String profileImageUrl) { this.profileImageUrl = profileImageUrl; }
 
-    // Helper method to get full name
     public String getFullName() {
         return firstName + " " + lastName;
     }

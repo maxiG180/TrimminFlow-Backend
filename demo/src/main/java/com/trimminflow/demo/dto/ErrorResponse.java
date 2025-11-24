@@ -1,10 +1,5 @@
 package com.trimminflow.demo.dto;
 
-/**
- * ErrorResponse DTO
- *
- * Standard error response format for API errors
- */
 public class ErrorResponse {
 
     private String error;

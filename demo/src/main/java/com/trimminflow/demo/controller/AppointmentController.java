@@ -31,7 +31,6 @@ public class AppointmentController {
         this.appointmentService = appointmentService;
     }
 
-    // create new appointment
     @PostMapping
     public ResponseEntity<AppointmentResponse> createAppointment(
             @RequestHeader("X-Barbershop-Id") UUID barbershopId,
@@ -41,7 +40,6 @@ public class AppointmentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // get appointments with filters
     @GetMapping
     public ResponseEntity<Page<AppointmentResponse>> getAppointments(
             @RequestHeader("X-Barbershop-Id") UUID barbershopId,
@@ -59,7 +57,6 @@ public class AppointmentController {
         return ResponseEntity.ok(appointments);
     }
 
-    // get appointment by id
     @GetMapping("/{id}")
     public ResponseEntity<AppointmentResponse> getAppointmentById(
             @RequestHeader("X-Barbershop-Id") UUID barbershopId,
@@ -69,7 +66,6 @@ public class AppointmentController {
         return ResponseEntity.ok(response);
     }
 
-    // update appointment
     @PutMapping("/{id}")
     public ResponseEntity<AppointmentResponse> updateAppointment(
             @RequestHeader("X-Barbershop-Id") UUID barbershopId,
@@ -80,7 +76,6 @@ public class AppointmentController {
         return ResponseEntity.ok(response);
     }
 
-    // cancel appointment
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> cancelAppointment(
             @RequestHeader("X-Barbershop-Id") UUID barbershopId,
@@ -90,7 +85,6 @@ public class AppointmentController {
         return ResponseEntity.noContent().build();
     }
 
-    // get available time slots
     @GetMapping("/availability")
     public ResponseEntity<List<LocalDateTime>> getAvailableTimeSlots(
             @RequestParam UUID barberId,

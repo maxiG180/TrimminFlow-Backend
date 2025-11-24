@@ -28,7 +28,6 @@ public class BarberController {
         this.barberManagementService = barberManagementService;
     }
 
-    // create new barber
     @PostMapping
     @Operation(summary = "Create a new barber", description = "Create a new barber for the authenticated user's barbershop")
     public ResponseEntity<?> createBarber(
@@ -43,7 +42,6 @@ public class BarberController {
         }
     }
 
-    // get barbers with pagination
     @GetMapping
     @Operation(summary = "Get barbers with pagination", description = "Get paginated barbers with optional search by name or email")
     public ResponseEntity<PageResponse<BarberResponse>> getAllBarbers(
@@ -64,7 +62,6 @@ public class BarberController {
         return ResponseEntity.ok(response);
     }
 
-    // get all barbers non-paginated
     @GetMapping("/all")
     @Operation(summary = "Get all barbers (non-paginated)", description = "Get all barbers for the authenticated user's barbershop without pagination")
     public ResponseEntity<List<BarberResponse>> getAllBarbersNonPaginated(
@@ -73,7 +70,6 @@ public class BarberController {
         return ResponseEntity.ok(barbers);
     }
 
-    // get active barbers paginated
     @GetMapping("/active")
     @Operation(summary = "Get active barbers (paginated)", description = "Get paginated active barbers for the authenticated user's barbershop")
     public ResponseEntity<PageResponse<BarberResponse>> getActiveBarbers(
@@ -85,7 +81,6 @@ public class BarberController {
         return ResponseEntity.ok(barbers);
     }
 
-    // get barber by id
     @GetMapping("/{id}")
     @Operation(summary = "Get barber by ID", description = "Get a specific barber by its ID")
     public ResponseEntity<?> getBarber(
@@ -100,7 +95,6 @@ public class BarberController {
         }
     }
 
-    // update barber
     @PutMapping("/{id}")
     @Operation(summary = "Update a barber", description = "Update an existing barber. Only provided fields will be updated.")
     public ResponseEntity<?> updateBarber(
@@ -116,7 +110,6 @@ public class BarberController {
         }
     }
 
-    // delete barber (soft)
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a barber", description = "Soft delete a barber (sets isActive to false)")
     public ResponseEntity<?> deleteBarber(
@@ -131,7 +124,6 @@ public class BarberController {
         }
     }
 
-    // hard delete barber
     @DeleteMapping("/{id}/hard")
     @Operation(summary = "Permanently delete a barber", description = "Hard delete a barber (permanent deletion)")
     public ResponseEntity<?> hardDeleteBarber(

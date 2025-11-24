@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-// service management service
 @org.springframework.stereotype.Service
 public class ServiceManagementService {
 
@@ -32,29 +31,23 @@ public class ServiceManagementService {
         this.barbershopRepository = barbershopRepository;
     }
 
-    // create new service
     @Transactional
     public ServiceResponse createService(UUID barbershopId, CreateServiceRequest request) {
-        // find barbershop
         Barbershop barbershop = barbershopRepository.findById(barbershopId)
                 .orElseThrow(() -> new RuntimeException("Barbershop not found"));
 
-        // check duplicate name
         if (serviceRepository.existsByNameAndBarbershopId(request.getName(), barbershopId)) {
             throw new RuntimeException("A service with this name already exists");
         }
 
-        // validate price
         if (request.getPrice().doubleValue() < 0) {
             throw new RuntimeException("Price must be a positive value");
         }
 
-        // validate duration
         if (request.getDurationMinutes() < 5 || request.getDurationMinutes() > 480) {
             throw new RuntimeException("Duration must be between 5 and 480 minutes");
         }
 
-        // create service
         Service service = new Service(
                 barbershop,
                 request.getName().trim(),
@@ -62,14 +55,11 @@ public class ServiceManagementService {
                 request.getPrice(),
                 request.getDurationMinutes());
 
-        // save to database
         Service savedService = serviceRepository.save(service);
 
-        // return response
         return new ServiceResponse(savedService);
     }
 
-    // get all services non-paginated
     @Transactional(readOnly = true)
     public List<ServiceResponse> getAllServices(UUID barbershopId) {
         List<Service> services = serviceRepository.findByBarbershopId(barbershopId);
@@ -78,7 +68,6 @@ public class ServiceManagementService {
                 .collect(Collectors.toList());
     }
 
-    // get all services paginated
     @Transactional(readOnly = true)
     public PageResponse<ServiceResponse> getAllServicesPaginated(UUID barbershopId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
@@ -87,7 +76,6 @@ public class ServiceManagementService {
         return PaginationUtils.createPageResponse(servicePage, ServiceResponse::new);
     }
 
-    // get active services non-paginated
     @Transactional(readOnly = true)
     public List<ServiceResponse> getActiveServices(UUID barbershopId) {
         List<Service> services = serviceRepository.findByBarbershopIdAndIsActive(barbershopId, true);
@@ -96,7 +84,6 @@ public class ServiceManagementService {
                 .collect(Collectors.toList());
     }
 
-    // get active services paginated
     @Transactional(readOnly = true)
     public PageResponse<ServiceResponse> getActiveServicesPaginated(UUID barbershopId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
@@ -105,13 +92,11 @@ public class ServiceManagementService {
         return PaginationUtils.createPageResponse(servicePage, ServiceResponse::new);
     }
 
-    // search services by name or description
     @Transactional(readOnly = true)
     public PageResponse<ServiceResponse> searchServices(UUID barbershopId, String searchTerm, int page, int size,
             boolean activeOnly) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
-        // return all if empty search
         if (searchTerm == null || searchTerm.trim().isEmpty()) {
             return activeOnly ? getActiveServicesPaginated(barbershopId, page, size)
                     : getAllServicesPaginated(barbershopId, page, size);
@@ -124,27 +109,21 @@ public class ServiceManagementService {
         return PaginationUtils.createPageResponse(servicePage, ServiceResponse::new);
     }
 
-    // get service by id
     @Transactional(readOnly = true)
     public ServiceResponse getService(UUID serviceId, UUID barbershopId) {
-        // find service with auth check
         Service service = serviceRepository.findByIdAndBarbershopId(serviceId, barbershopId)
                 .orElseThrow(() -> new RuntimeException("Service not found or does not belong to this barbershop"));
 
         return new ServiceResponse(service);
     }
 
-    // update service
     @Transactional
     public ServiceResponse updateService(UUID serviceId, UUID barbershopId, UpdateServiceRequest request) {
-        // find service with auth check
         Service service = serviceRepository.findByIdAndBarbershopId(serviceId, barbershopId)
                 .orElseThrow(() -> new RuntimeException("Service not found or does not belong to this barbershop"));
 
-        // update fields with validation
         if (request.getName() != null) {
             String trimmedName = request.getName().trim();
-            // check duplicate name
             if (serviceRepository.existsByNameAndBarbershopIdExcludingId(trimmedName, barbershopId, serviceId)) {
                 throw new RuntimeException("A service with this name already exists");
             }
@@ -173,34 +152,27 @@ public class ServiceManagementService {
             service.setIsActive(request.getIsActive());
         }
 
-        // save updated service
         Service updatedService = serviceRepository.save(service);
 
         return new ServiceResponse(updatedService);
     }
 
-    // delete service (soft)
     @Transactional
     public void deleteService(UUID serviceId, UUID barbershopId) {
-        // find service with auth check
         Service service = serviceRepository.findByIdAndBarbershopId(serviceId, barbershopId)
                 .orElseThrow(() -> new RuntimeException("Service not found or does not belong to this barbershop"));
 
-        // soft delete
         service.setIsActive(false);
         serviceRepository.save(service);
     }
 
-    // hard delete service
     @Transactional
     public void hardDeleteService(UUID serviceId, UUID barbershopId) {
-        // find service with auth check
         Service service = serviceRepository.findByIdAndBarbershopId(serviceId, barbershopId)
                 .orElseThrow(() -> new RuntimeException("Service not found or does not belong to this barbershop"));
 
         // todo: check for existing appointments
 
-        // hard delete
         serviceRepository.delete(service);
     }
 }

@@ -36,12 +36,10 @@ public class AuthService {
 
     @Transactional
     public RegisterResponse registerBarbershopOwner(RegisterRequest request) {
-        // check if email exists
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Email already registered");
         }
 
-        // create barbershop
         Barbershop barbershop = new Barbershop();
         barbershop.setName(request.getBarbershopName());
         barbershop.setEmail(request.getEmail());
@@ -49,7 +47,6 @@ public class AuthService {
         barbershop.setAddress(request.getAddress());
         Barbershop savedBarbershop = barbershopRepository.save(barbershop);
 
-        // create owner user
         User owner = new User();
         owner.setEmail(request.getEmail());
         owner.setFirstName(request.getFirstName());
@@ -66,29 +63,23 @@ public class AuthService {
                 "Barbershop registered successfully");
     }
 
-    // login user and return jwt
     @Transactional
     public LoginResponse login(LoginRequest request) {
-        // find user by email
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("Invalid email or password"));
 
-        // verify password
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new RuntimeException("Invalid email or password");
         }
 
-        // update last login
         user.setLastLogin(LocalDateTime.now());
         userRepository.save(user);
 
-        // generate jwt token
         String accessToken = jwtUtil.generateToken(
                 user.getEmail(),
                 user.getId(),
                 user.getRole().name());
 
-        // return response
         return new LoginResponse(
                 accessToken,
                 user.getId(),

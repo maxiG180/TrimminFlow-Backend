@@ -4,9 +4,6 @@ import jakarta.validation.constraints.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-/**
- * Request DTO for creating a new appointment
- */
 public class CreateAppointmentRequest {
 
     @NotNull(message = "Barber ID is required")
@@ -33,7 +30,6 @@ public class CreateAppointmentRequest {
     @Size(max = 500, message = "Notes must be less than 500 characters")
     private String notes;
 
-    // Constructors
     public CreateAppointmentRequest() {
     }
 
@@ -48,7 +44,6 @@ public class CreateAppointmentRequest {
         this.notes = notes;
     }
 
-    // Getters and Setters
     public UUID getBarberId() {
         return barberId;
     }

@@ -54,7 +54,6 @@ public class BusinessHours {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // Constructors
     public BusinessHours() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
@@ -70,7 +69,6 @@ public class BusinessHours {
         this.updatedAt = LocalDateTime.now();
     }
 
-    // Getters and Setters
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
 

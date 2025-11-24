@@ -28,7 +28,6 @@ public class ServiceController {
         this.serviceManagementService = serviceManagementService;
     }
 
-    // create new service
     @PostMapping
     @Operation(summary = "Create a new service", description = "Create a new service for the authenticated user's barbershop")
     public ResponseEntity<?> createService(
@@ -43,7 +42,6 @@ public class ServiceController {
         }
     }
 
-    // get all services non-paginated
     @GetMapping("/all")
     @Operation(summary = "Get all services", description = "Get all services for the authenticated user's barbershop (non-paginated)")
     public ResponseEntity<List<ServiceResponse>> getAllServices(
@@ -52,7 +50,6 @@ public class ServiceController {
         return ResponseEntity.ok(services);
     }
 
-    // get services with pagination
     @GetMapping
     @Operation(summary = "Get services with pagination", description = "Get paginated services with optional search by name or description")
     public ResponseEntity<PageResponse<ServiceResponse>> getServicesPaginated(
@@ -73,7 +70,6 @@ public class ServiceController {
         return ResponseEntity.ok(response);
     }
 
-    // get active services
     @GetMapping("/active")
     @Operation(summary = "Get active services", description = "Get all active services for the authenticated user's barbershop")
     public ResponseEntity<List<ServiceResponse>> getActiveServices(
@@ -82,7 +78,6 @@ public class ServiceController {
         return ResponseEntity.ok(services);
     }
 
-    // get service by id
     @GetMapping("/{id}")
     @Operation(summary = "Get service by ID", description = "Get a specific service by its ID")
     public ResponseEntity<ServiceResponse> getService(
@@ -96,7 +91,6 @@ public class ServiceController {
         }
     }
 
-    // update service
     @PutMapping("/{id}")
     @Operation(summary = "Update a service", description = "Update an existing service. Only provided fields will be updated.")
     public ResponseEntity<?> updateService(
@@ -112,7 +106,6 @@ public class ServiceController {
         }
     }
 
-    // delete service (soft)
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a service", description = "Soft delete a service (sets isActive to false)")
     public ResponseEntity<Void> deleteService(
@@ -126,7 +119,6 @@ public class ServiceController {
         }
     }
 
-    // hard delete service
     @DeleteMapping("/{id}/hard")
     @Operation(summary = "Permanently delete a service", description = "Hard delete a service (permanent deletion)")
     public ResponseEntity<Void> hardDeleteService(

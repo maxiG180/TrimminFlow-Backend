@@ -5,11 +5,6 @@ import com.trimminflow.demo.validation.ValidBusinessHours;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalTime;
 
-/**
- * DTO for setting business hours
- *
- * Validation handled by @ValidBusinessHours annotation
- */
 @ValidBusinessHours
 public class SetBusinessHoursRequest {
     @NotNull(message = "Day of week is required")
