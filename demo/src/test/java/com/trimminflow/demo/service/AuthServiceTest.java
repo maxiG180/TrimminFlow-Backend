@@ -32,6 +32,8 @@ class AuthServiceTest {
     @InjectMocks
     AuthService authService;
 
+    // ./gradlew test --tests com.trimminflow.demo.service.AuthServiceTest
+
     @Test
     void testLoginSuccess() {
         // setup data
