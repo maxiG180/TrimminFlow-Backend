@@ -42,7 +42,17 @@ jobs:
         chmod +x gradlew
         ./gradlew build jacocoTestReport sonar
 
-    - name: Build Docker Image
-      run: |
-        cd demo
-        docker build -t trimminflow-backend .
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build and Push Docker Image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./demo
+        push: true
+        tags: |
+          ${{ secrets.DOCKERHUB_USERNAME }}/trimminflow-backend:latest
+          ${{ secrets.DOCKERHUB_USERNAME }}/trimminflow-backend:${{ github.sha }}
