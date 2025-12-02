@@ -23,6 +23,7 @@ sonar {
         property "sonar.organization", "maksym-grebeniuk"
         property "sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml"
         property "sonar.java.binaries", "build/classes/java/main"
+        property "sonar.cpd.exclusions", "**/dto/**, **/entity/**"
     }
 }
 
