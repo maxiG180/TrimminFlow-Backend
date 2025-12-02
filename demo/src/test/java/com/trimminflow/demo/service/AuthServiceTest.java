@@ -66,7 +66,7 @@ class AuthServiceTest {
     }
 
     @Test
-    void testLoginFail() {
+    void login_throwsRuntimeException_whenTheEmailOrPasswordDoesNotExist() {
         // setup
         String mail = "test@test.com";
         User user = new User();
