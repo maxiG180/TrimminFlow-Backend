@@ -76,7 +76,7 @@ jobs:
           ./gradlew sonar
 
   docker-push:
-    name: 🐳 Docker Push
+    name: Docker Push
     needs: analyze
     runs-on: ubuntu-latest
     steps:
