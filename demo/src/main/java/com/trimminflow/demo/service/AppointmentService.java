@@ -26,16 +26,20 @@ public class AppointmentService {
     private final BarbershopRepository barbershopRepository;
     private final BusinessHoursRepository businessHoursRepository;
 
+    private final org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate;
+
     public AppointmentService(AppointmentRepository appointmentRepository,
             BarberRepository barberRepository,
             ServiceRepository serviceRepository,
             BarbershopRepository barbershopRepository,
-            BusinessHoursRepository businessHoursRepository) {
+            BusinessHoursRepository businessHoursRepository,
+            org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate) {
         this.appointmentRepository = appointmentRepository;
         this.barberRepository = barberRepository;
         this.serviceRepository = serviceRepository;
         this.barbershopRepository = barbershopRepository;
         this.businessHoursRepository = businessHoursRepository;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @Transactional
@@ -82,7 +86,9 @@ public class AppointmentService {
         appointment.setNotes(request.getNotes());
 
         appointment = appointmentRepository.save(appointment);
-        return AppointmentResponse.fromEntity(appointment);
+        AppointmentResponse response = AppointmentResponse.fromEntity(appointment);
+        messagingTemplate.convertAndSend("/topic/appointments", response);
+        return response;
     }
 
     public AppointmentResponse getAppointmentById(UUID barbershopId, UUID appointmentId) {
@@ -170,7 +176,9 @@ public class AppointmentService {
         }
 
         appointment = appointmentRepository.save(appointment);
-        return AppointmentResponse.fromEntity(appointment);
+        AppointmentResponse response = AppointmentResponse.fromEntity(appointment);
+        messagingTemplate.convertAndSend("/topic/appointments", response);
+        return response;
     }
 
     @Transactional
@@ -183,7 +191,8 @@ public class AppointmentService {
         }
 
         appointment.setStatus(AppointmentStatus.CANCELLED);
-        appointmentRepository.save(appointment);
+        appointment = appointmentRepository.save(appointment);
+        messagingTemplate.convertAndSend("/topic/appointments", AppointmentResponse.fromEntity(appointment));
     }
 
     public List<LocalDateTime> getAvailableTimeSlots(UUID barberId, LocalDate date, Integer serviceDuration) {
