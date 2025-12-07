@@ -87,6 +87,7 @@ public class AppointmentService {
 
         appointment = appointmentRepository.save(appointment);
         AppointmentResponse response = AppointmentResponse.fromEntity(appointment);
+        // send update to everyone connected
         messagingTemplate.convertAndSend("/topic/appointments", response);
         return response;
     }
@@ -177,6 +178,7 @@ public class AppointmentService {
 
         appointment = appointmentRepository.save(appointment);
         AppointmentResponse response = AppointmentResponse.fromEntity(appointment);
+        // send update to everyone connected
         messagingTemplate.convertAndSend("/topic/appointments", response);
         return response;
     }
@@ -192,6 +194,7 @@ public class AppointmentService {
 
         appointment.setStatus(AppointmentStatus.CANCELLED);
         appointment = appointmentRepository.save(appointment);
+        // send update to everyone connected
         messagingTemplate.convertAndSend("/topic/appointments", AppointmentResponse.fromEntity(appointment));
     }
 

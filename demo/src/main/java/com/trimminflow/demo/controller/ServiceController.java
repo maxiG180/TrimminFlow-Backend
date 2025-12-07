@@ -5,12 +5,16 @@ import com.trimminflow.demo.dto.ErrorResponse;
 import com.trimminflow.demo.dto.PageResponse;
 import com.trimminflow.demo.dto.ServiceResponse;
 import com.trimminflow.demo.dto.UpdateServiceRequest;
+import com.trimminflow.demo.entity.User;
+import com.trimminflow.demo.repository.UserRepository;
 import com.trimminflow.demo.service.ServiceManagementService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,17 +27,27 @@ import java.util.UUID;
 public class ServiceController {
 
     private final ServiceManagementService serviceManagementService;
+    private final UserRepository userRepository;
 
-    public ServiceController(ServiceManagementService serviceManagementService) {
+    public ServiceController(ServiceManagementService serviceManagementService, UserRepository userRepository) {
         this.serviceManagementService = serviceManagementService;
+        this.userRepository = userRepository;
+    }
+
+    private User getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = (String) authentication.getPrincipal();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
     @PostMapping
     @Operation(summary = "Create a new service", description = "Create a new service for the authenticated user's barbershop")
-    public ResponseEntity<?> createService(
-            @Valid @RequestBody CreateServiceRequest request,
-            @RequestHeader("X-Barbershop-Id") UUID barbershopId) {
+    public ResponseEntity<?> createService(@Valid @RequestBody CreateServiceRequest request) {
         try {
+            User user = getAuthenticatedUser();
+            UUID barbershopId = user.getBarbershop().getId();
+
             ServiceResponse response = serviceManagementService.createService(barbershopId, request);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (RuntimeException e) {
@@ -44,8 +58,10 @@ public class ServiceController {
 
     @GetMapping("/all")
     @Operation(summary = "Get all services", description = "Get all services for the authenticated user's barbershop (non-paginated)")
-    public ResponseEntity<List<ServiceResponse>> getAllServices(
-            @RequestHeader("X-Barbershop-Id") UUID barbershopId) {
+    public ResponseEntity<List<ServiceResponse>> getAllServices() {
+        User user = getAuthenticatedUser();
+        UUID barbershopId = user.getBarbershop().getId();
+
         List<ServiceResponse> services = serviceManagementService.getAllServices(barbershopId);
         return ResponseEntity.ok(services);
     }
@@ -53,11 +69,14 @@ public class ServiceController {
     @GetMapping
     @Operation(summary = "Get services with pagination", description = "Get paginated services with optional search by name or description")
     public ResponseEntity<PageResponse<ServiceResponse>> getServicesPaginated(
-            @RequestHeader("X-Barbershop-Id") UUID barbershopId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "false") boolean activeOnly) {
+
+        User user = getAuthenticatedUser();
+        UUID barbershopId = user.getBarbershop().getId();
+
         PageResponse<ServiceResponse> response;
 
         if (search != null && !search.trim().isEmpty()) {
@@ -72,18 +91,21 @@ public class ServiceController {
 
     @GetMapping("/active")
     @Operation(summary = "Get active services", description = "Get all active services for the authenticated user's barbershop")
-    public ResponseEntity<List<ServiceResponse>> getActiveServices(
-            @RequestHeader("X-Barbershop-Id") UUID barbershopId) {
+    public ResponseEntity<List<ServiceResponse>> getActiveServices() {
+        User user = getAuthenticatedUser();
+        UUID barbershopId = user.getBarbershop().getId();
+
         List<ServiceResponse> services = serviceManagementService.getActiveServices(barbershopId);
         return ResponseEntity.ok(services);
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get service by ID", description = "Get a specific service by its ID")
-    public ResponseEntity<ServiceResponse> getService(
-            @PathVariable UUID id,
-            @RequestHeader("X-Barbershop-Id") UUID barbershopId) {
+    public ResponseEntity<ServiceResponse> getService(@PathVariable UUID id) {
         try {
+            User user = getAuthenticatedUser();
+            UUID barbershopId = user.getBarbershop().getId();
+
             ServiceResponse service = serviceManagementService.getService(id, barbershopId);
             return ResponseEntity.ok(service);
         } catch (RuntimeException e) {
@@ -95,9 +117,11 @@ public class ServiceController {
     @Operation(summary = "Update a service", description = "Update an existing service. Only provided fields will be updated.")
     public ResponseEntity<?> updateService(
             @PathVariable UUID id,
-            @Valid @RequestBody UpdateServiceRequest request,
-            @RequestHeader("X-Barbershop-Id") UUID barbershopId) {
+            @Valid @RequestBody UpdateServiceRequest request) {
         try {
+            User user = getAuthenticatedUser();
+            UUID barbershopId = user.getBarbershop().getId();
+
             ServiceResponse response = serviceManagementService.updateService(id, barbershopId, request);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
@@ -108,10 +132,11 @@ public class ServiceController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a service", description = "Soft delete a service (sets isActive to false)")
-    public ResponseEntity<Void> deleteService(
-            @PathVariable UUID id,
-            @RequestHeader("X-Barbershop-Id") UUID barbershopId) {
+    public ResponseEntity<Void> deleteService(@PathVariable UUID id) {
         try {
+            User user = getAuthenticatedUser();
+            UUID barbershopId = user.getBarbershop().getId();
+
             serviceManagementService.deleteService(id, barbershopId);
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
@@ -121,10 +146,11 @@ public class ServiceController {
 
     @DeleteMapping("/{id}/hard")
     @Operation(summary = "Permanently delete a service", description = "Hard delete a service (permanent deletion)")
-    public ResponseEntity<Void> hardDeleteService(
-            @PathVariable UUID id,
-            @RequestHeader("X-Barbershop-Id") UUID barbershopId) {
+    public ResponseEntity<Void> hardDeleteService(@PathVariable UUID id) {
         try {
+            User user = getAuthenticatedUser();
+            UUID barbershopId = user.getBarbershop().getId();
+
             serviceManagementService.hardDeleteService(id, barbershopId);
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
