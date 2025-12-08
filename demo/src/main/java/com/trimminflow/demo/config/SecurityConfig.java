@@ -20,71 +20,72 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthFilter;
-    private final com.trimminflow.demo.security.RateLimitFilter rateLimitFilter;
+        private final JwtAuthenticationFilter jwtAuthFilter;
+        private final com.trimminflow.demo.security.RateLimitFilter rateLimitFilter;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter,
-            com.trimminflow.demo.security.RateLimitFilter rateLimitFilter) {
-        this.jwtAuthFilter = jwtAuthFilter;
-        this.rateLimitFilter = rateLimitFilter;
-    }
+        public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter,
+                        com.trimminflow.demo.security.RateLimitFilter rateLimitFilter) {
+                this.jwtAuthFilter = jwtAuthFilter;
+                this.rateLimitFilter = rateLimitFilter;
+        }
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                // disable csrf for stateless jwt auth
-                .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // enable cors
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // no sessions
-                )
-                .authorizeHttpRequests(auth -> auth
-                        // public endpoints
-                        .requestMatchers(
-                                "/swagger-ui/**",
-                                "/swagger-ui.html",
-                                "/v3/api-docs/**",
-                                "/api/v1/auth/register",
-                                "/api/v1/auth/login",
-                                "/api/v1/auth/logout",
-                                "/api/v1/health",
-                                // public booking endpoints
-                                "/api/v1/barbershops/{id}",
-                                "/api/v1/services/active",
-                                "/api/v1/barbers/active",
-                                "/api/v1/appointments/availability",
-                                "/api/v1/appointments")
-                        .permitAll()
-                        // protected endpoints
-                        .requestMatchers("/api/v1/barbershops/**").authenticated()
-                        .requestMatchers("/api/v1/users/**").authenticated()
-                        .requestMatchers("/api/v1/services/**").authenticated()
-                        .anyRequest().authenticated() // all other requests require auth
-                )
-                .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+                http
+                                // disable csrf for stateless jwt auth
+                                .csrf(csrf -> csrf.disable())
+                                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // enable cors
+                                .sessionManagement(session -> session
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // no sessions
+                                )
+                                .authorizeHttpRequests(auth -> auth
+                                                // public endpoints
+                                                .requestMatchers(
+                                                                "/swagger-ui/**",
+                                                                "/swagger-ui.html",
+                                                                "/v3/api-docs/**",
+                                                                "/api/v1/auth/register",
+                                                                "/api/v1/auth/login",
+                                                                "/api/v1/auth/logout",
+                                                                "/api/v1/health",
+                                                                // public booking endpoints
+                                                                "/api/v1/barbershops/{id}",
+                                                                "/api/v1/services/active",
+                                                                "/api/v1/barbers/active",
+                                                                "/api/v1/appointments/availability",
+                                                                "/api/v1/appointments")
+                                                .permitAll()
+                                                // protected endpoints
+                                                .requestMatchers("/api/v1/barbershops/**").authenticated()
+                                                .requestMatchers("/api/v1/users/**").authenticated()
+                                                .requestMatchers("/api/v1/services/**").authenticated()
+                                                .anyRequest().authenticated() // all other requests require auth
+                                )
+                                .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
+                                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
-        return http.build();
-    }
+                return http.build();
+        }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        // Allow both default Next.js ports (3000 and 3001)
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:3000",
-                "http://localhost:3001"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
-        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
+        @org.springframework.beans.factory.annotation.Value("#{'${cors.allowed.origins}'.split(',')}")
+        private List<String> allowedOrigins;
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
+        @Bean
+        public CorsConfigurationSource corsConfigurationSource() {
+                CorsConfiguration configuration = new CorsConfiguration();
+                // Use the injected allowedOrigins
+                configuration.setAllowedOrigins(allowedOrigins);
+                configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
+                configuration.setAllowedHeaders(List.of("*"));
+                configuration.setAllowCredentials(true);
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                source.registerCorsConfiguration("/**", configuration);
+                return source;
+        }
+
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+                return new BCryptPasswordEncoder();
+        }
 }
