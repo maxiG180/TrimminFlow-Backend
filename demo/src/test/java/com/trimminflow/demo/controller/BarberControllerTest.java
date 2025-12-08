@@ -104,8 +104,8 @@ public class BarberControllerTest {
                 BarberResponse response = new BarberResponse();
                 response.setFirstName("John");
 
-                PageResponse<BarberResponse> pageResponse = new PageResponse<BarberResponse>(
-                                Collections.singletonList(response), 0, 10, 1, 1, true, true);
+                PageResponse<BarberResponse> pageResponse = new PageResponse<>(
+                                Collections.singletonList(response), 0, 10, 1L, 1);
 
                 when(barberManagementService.getAllBarbersPaginated(barbershopId, 0, 10))
                                 .thenReturn(pageResponse);
