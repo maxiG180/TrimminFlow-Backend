@@ -24,6 +24,8 @@ sonar {
         property "sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml"
         property "sonar.java.binaries", "build/classes/java/main"
         property "sonar.cpd.exclusions", "**/dto/**, **/entity/**"
+        property "sonar.exclusions", "**/dto/**, **/entity/**, **/config/**"
+        property "sonar.coverage.exclusions", "**/dto/**, **/entity/**, **/config/**, **/DemoApplication.java"
     }
 }
 
@@ -74,4 +76,8 @@ tasks.named('jacocoTestReport') {
     reports {
         xml.required = true
     }
+}
+
+tasks.named('sonar') {
+    dependsOn test, jacocoTestReport
 }
