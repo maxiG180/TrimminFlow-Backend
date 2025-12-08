@@ -20,15 +20,40 @@ public class UpdateBarberRequest extends BaseBarberRequest {
     private String lastName;
 
     private Boolean isActive;
+    private Boolean removeProfileImage;
 
-    public UpdateBarberRequest() {}
+    public UpdateBarberRequest() {
+    }
 
-    public String getFirstName() { return firstName; }
-    public void setFirstName(String firstName) { this.firstName = firstName; }
+    public String getFirstName() {
+        return firstName;
+    }
 
-    public String getLastName() { return lastName; }
-    public void setLastName(String lastName) { this.lastName = lastName; }
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
 
-    public Boolean getIsActive() { return isActive; }
-    public void setIsActive(Boolean isActive) { this.isActive = isActive; }
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
+    }
+
+    public Boolean getRemoveProfileImage() {
+        return removeProfileImage;
+    }
+
+    public void setRemoveProfileImage(Boolean removeProfileImage) {
+        this.removeProfileImage = removeProfileImage;
+    }
 }

@@ -163,6 +163,8 @@ public class BarberManagementService {
         if (request.getProfileImageUrl() != null) {
             String trimmedUrl = request.getProfileImageUrl().trim();
             barber.setProfileImageUrl(trimmedUrl.isEmpty() ? null : trimmedUrl);
+        } else if (Boolean.TRUE.equals(request.getRemoveProfileImage())) {
+            barber.setProfileImageUrl(null);
         }
 
         if (request.getIsActive() != null) {
