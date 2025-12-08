@@ -41,6 +41,9 @@ public class AppointmentControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
+    private com.trimminflow.demo.security.RateLimitFilter rateLimitFilter;
+
+    @MockBean
     private AppointmentService appointmentService;
 
     @MockBean

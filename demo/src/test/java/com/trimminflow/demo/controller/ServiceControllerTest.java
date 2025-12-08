@@ -40,6 +40,9 @@ public class ServiceControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
+    private com.trimminflow.demo.security.RateLimitFilter rateLimitFilter;
+
+    @MockBean
     private ServiceManagementService serviceManagementService;
 
     @MockBean
