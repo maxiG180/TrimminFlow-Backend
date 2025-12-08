@@ -28,6 +28,7 @@ import java.util.UUID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doAnswer;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -68,6 +69,17 @@ public class ServiceControllerTest {
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken("test@example.com",
                 null, Collections.emptyList());
         SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // Configure RateLimitFilter to pass requests through
+        try {
+            doAnswer(invocation -> {
+                jakarta.servlet.FilterChain chain = invocation.getArgument(2);
+                chain.doFilter(invocation.getArgument(0), invocation.getArgument(1));
+                return null;
+            }).when(rateLimitFilter).doFilter(any(), any(), any());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test

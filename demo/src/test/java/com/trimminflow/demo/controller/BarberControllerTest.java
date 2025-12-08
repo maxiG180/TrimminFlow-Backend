@@ -31,6 +31,7 @@ import java.util.UUID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doAnswer;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -78,6 +79,17 @@ public class BarberControllerTest {
                                 "test@example.com",
                                 null, Collections.emptyList());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                // Configure RateLimitFilter to pass requests through
+                try {
+                    doAnswer(invocation -> {
+                        jakarta.servlet.FilterChain chain = invocation.getArgument(2);
+                        chain.doFilter(invocation.getArgument(0), invocation.getArgument(1));
+                        return null;
+                    }).when(rateLimitFilter).doFilter(any(), any(), any());
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
         }
 
         @Test
