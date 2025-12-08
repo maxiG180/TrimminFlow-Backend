@@ -44,6 +44,9 @@ public class BarberControllerTest {
         private MockMvc mockMvc;
 
         @MockBean
+        private com.trimminflow.demo.security.RateLimitFilter rateLimitFilter;
+
+        @MockBean
         private BarberManagementService barberManagementService;
 
         @MockBean
