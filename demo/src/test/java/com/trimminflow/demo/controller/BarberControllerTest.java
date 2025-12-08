@@ -40,79 +40,80 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import({ SecurityConfig.class, JwtAuthenticationFilter.class })
 public class BarberControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    @MockBean
-    private BarberManagementService barberManagementService;
+        @MockBean
+        private BarberManagementService barberManagementService;
 
-    @MockBean
-    private CloudinaryService cloudinaryService;
+        @MockBean
+        private CloudinaryService cloudinaryService;
 
-    @MockBean
-    private UserRepository userRepository;
+        @MockBean
+        private UserRepository userRepository;
 
-    @MockBean
-    private JwtUtil jwtUtil;
+        @MockBean
+        private JwtUtil jwtUtil;
 
-    private User user;
-    private Barbershop barbershop;
-    private UUID barbershopId;
+        private User user;
+        private Barbershop barbershop;
+        private UUID barbershopId;
 
-    @BeforeEach
-    void setUp() {
-        barbershopId = UUID.randomUUID();
-        barbershop = new Barbershop();
-        barbershop.setId(barbershopId);
+        @BeforeEach
+        void setUp() {
+                barbershopId = UUID.randomUUID();
+                barbershop = new Barbershop();
+                barbershop.setId(barbershopId);
 
-        user = new User();
-        user.setEmail("test@example.com");
-        user.setBarbershop(barbershop);
+                user = new User();
+                user.setEmail("test@example.com");
+                user.setBarbershop(barbershop);
 
-        // Manually set up the SecurityContext with a String principal to match
-        // Controller expectation
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken("test@example.com",
-                null, Collections.emptyList());
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-    }
+                // Manually set up the SecurityContext with a String principal to match
+                // Controller expectation
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                                "test@example.com",
+                                null, Collections.emptyList());
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+        }
 
-    @Test
-    void createBarber_Success() throws Exception {
-        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+        @Test
+        void createBarber_Success() throws Exception {
+                when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
 
-        BarberResponse response = new BarberResponse();
-        response.setFirstName("John");
-        response.setLastName("Doe");
+                BarberResponse response = new BarberResponse();
+                response.setFirstName("John");
+                response.setLastName("Doe");
 
-        when(barberManagementService.createBarber(eq(barbershopId), any(CreateBarberRequest.class)))
-                .thenReturn(response);
+                when(barberManagementService.createBarber(eq(barbershopId), any(CreateBarberRequest.class)))
+                                .thenReturn(response);
 
-        mockMvc.perform(multipart("/api/v1/barbers")
-                .param("firstName", "John")
-                .param("lastName", "Doe")
-                .param("email", "john@example.com"))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.firstName").value("John"))
-                .andExpect(jsonPath("$.lastName").value("Doe"));
-    }
+                mockMvc.perform(multipart("/api/v1/barbers")
+                                .param("firstName", "John")
+                                .param("lastName", "Doe")
+                                .param("email", "john@example.com"))
+                                .andExpect(status().isCreated())
+                                .andExpect(jsonPath("$.firstName").value("John"))
+                                .andExpect(jsonPath("$.lastName").value("Doe"));
+        }
 
-    @Test
-    void getAllBarbers_Success() throws Exception {
-        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+        @Test
+        void getAllBarbers_Success() throws Exception {
+                when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
 
-        BarberResponse response = new BarberResponse();
-        response.setFirstName("John");
+                BarberResponse response = new BarberResponse();
+                response.setFirstName("John");
 
-        PageResponse<BarberResponse> pageResponse = new PageResponse<>(
-                Collections.singletonList(response), 0, 10, 1, 1, true, true);
+                PageResponse<BarberResponse> pageResponse = new PageResponse<BarberResponse>(
+                                Collections.singletonList(response), 0, 10, 1, 1, true, true);
 
-        when(barberManagementService.getAllBarbersPaginated(barbershopId, 0, 10))
-                .thenReturn(pageResponse);
+                when(barberManagementService.getAllBarbersPaginated(barbershopId, 0, 10))
+                                .thenReturn(pageResponse);
 
-        mockMvc.perform(get("/api/v1/barbers")
-                .param("page", "0")
-                .param("size", "10"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].firstName").value("John"));
-    }
+                mockMvc.perform(get("/api/v1/barbers")
+                                .param("page", "0")
+                                .param("size", "10"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.content[0].firstName").value("John"));
+        }
 }
