@@ -1,18 +1,25 @@
 package com.trimminflow.demo.security;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
 class JwtUtilTest {
 
-    @Autowired
     private JwtUtil jwtUtil;
+
+    @BeforeEach
+    void setUp() {
+        jwtUtil = new JwtUtil();
+        // Manually inject values that are usually injected by @Value
+        ReflectionTestUtils.setField(jwtUtil, "secret",
+                "SuperSecretKeyForTestingThatIsLongEnoughToSatisfyHMACRequirements");
+        ReflectionTestUtils.setField(jwtUtil, "expiration", 3600000L); // 1 hour
+    }
 
     @Test
     void testTokenGenerationAndValidation() {
