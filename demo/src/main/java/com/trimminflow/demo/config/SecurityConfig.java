@@ -71,6 +71,7 @@ public class SecurityConfig {
         private String allowedOriginsString;
 
         @Bean
+        // Force redeploy
         public CorsConfigurationSource corsConfigurationSource() {
                 CorsConfiguration configuration = new CorsConfiguration();
 
