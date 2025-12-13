@@ -28,7 +28,7 @@ public class UserController {
                 || authentication.getPrincipal().equals("anonymousUser")) {
             throw new RuntimeException("Unauthorized");
         }
-        String email = (String) authentication.getPrincipal();
+        String email = authentication.getName();
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
