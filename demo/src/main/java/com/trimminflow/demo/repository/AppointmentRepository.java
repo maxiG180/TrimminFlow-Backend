@@ -65,4 +65,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
         long countByBarberIdAndStatus(UUID barberId, AppointmentStatus status);
 
         long countByBarbershopIdAndStatus(UUID barbershopId, AppointmentStatus status);
+
+        Page<Appointment> findByCustomerIdOrderByAppointmentDateTimeDesc(UUID customerId, Pageable pageable);
 }

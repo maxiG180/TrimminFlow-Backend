@@ -25,6 +25,7 @@ public class AppointmentService {
     private final ServiceRepository serviceRepository;
     private final BarbershopRepository barbershopRepository;
     private final BusinessHoursRepository businessHoursRepository;
+    private final CustomerRepository customerRepository;
 
     private final org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate;
 
@@ -33,12 +34,14 @@ public class AppointmentService {
             ServiceRepository serviceRepository,
             BarbershopRepository barbershopRepository,
             BusinessHoursRepository businessHoursRepository,
+            CustomerRepository customerRepository,
             org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate) {
         this.appointmentRepository = appointmentRepository;
         this.barberRepository = barberRepository;
         this.serviceRepository = serviceRepository;
         this.barbershopRepository = barbershopRepository;
         this.businessHoursRepository = businessHoursRepository;
+        this.customerRepository = customerRepository;
         this.messagingTemplate = messagingTemplate;
     }
 
@@ -84,6 +87,20 @@ public class AppointmentService {
                 request.getCustomerEmail(),
                 request.getCustomerPhone());
         appointment.setNotes(request.getNotes());
+
+        // Find or Create Customer
+        Customer customer = customerRepository.findByBarbershopIdAndPhone(barbershopId, request.getCustomerPhone())
+                .orElseGet(() -> {
+                    Customer newCustomer = new Customer(
+                            barbershop,
+                            request.getCustomerName(), // firstName (assuming full name for now or split if needed)
+                            null, // lastName
+                            request.getCustomerEmail(),
+                            request.getCustomerPhone());
+                    return customerRepository.save(newCustomer);
+                });
+
+        appointment.setCustomer(customer);
 
         appointment = appointmentRepository.save(appointment);
         AppointmentResponse response = AppointmentResponse.fromEntity(appointment);
@@ -136,6 +153,28 @@ public class AppointmentService {
 
         if (!appointment.getBarbershop().getId().equals(barbershopId)) {
             throw new IllegalArgumentException("Appointment does not belong to this barbershop");
+        }
+
+        // Ensure appointment has a customer (backfill for old appointments)
+        if (appointment.getCustomer() == null && appointment.getCustomerPhone() != null) {
+            // Extract to final variables for lambda
+            final Barbershop barbershop = appointment.getBarbershop();
+            final String customerName = appointment.getCustomerName();
+            final String customerEmail = appointment.getCustomerEmail();
+            final String customerPhone = appointment.getCustomerPhone();
+
+            Customer customer = customerRepository
+                    .findByBarbershopIdAndPhone(barbershopId, customerPhone)
+                    .orElseGet(() -> {
+                        Customer newCustomer = new Customer(
+                                barbershop,
+                                customerName,
+                                null,
+                                customerEmail,
+                                customerPhone);
+                        return customerRepository.save(newCustomer);
+                    });
+            appointment.setCustomer(customer);
         }
 
         if (request.getServiceId() != null) {
@@ -193,9 +232,9 @@ public class AppointmentService {
         }
 
         appointment.setStatus(AppointmentStatus.CANCELLED);
-        appointment = appointmentRepository.save(appointment);
+        final Appointment savedAppointment = appointmentRepository.save(appointment);
         // send update to everyone connected
-        messagingTemplate.convertAndSend("/topic/appointments", AppointmentResponse.fromEntity(appointment));
+        messagingTemplate.convertAndSend("/topic/appointments", AppointmentResponse.fromEntity(savedAppointment));
     }
 
     public List<LocalDateTime> getAvailableTimeSlots(UUID barberId, LocalDate date, Integer serviceDuration) {

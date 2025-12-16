@@ -40,6 +40,8 @@ public class AppointmentServiceTest {
         private BusinessHoursRepository businessHoursRepository;
         @Mock
         private SimpMessagingTemplate messagingTemplate;
+        @Mock
+        private CustomerRepository customerRepository;
 
         @InjectMocks
         private AppointmentService appointmentService;
@@ -91,6 +93,15 @@ public class AppointmentServiceTest {
                                 .thenReturn(Collections.emptyList());
                 when(appointmentRepository.save(any(Appointment.class)))
                                 .thenAnswer(invocation -> invocation.getArgument(0));
+
+                when(customerRepository.findByBarbershopIdAndPhone(any(), any()))
+                                .thenReturn(Optional.empty());
+                when(customerRepository.save(any(Customer.class)))
+                                .thenAnswer(invocation -> {
+                                        Customer c = invocation.getArgument(0);
+                                        c.setId(UUID.randomUUID());
+                                        return c;
+                                });
 
                 AppointmentResponse response = appointmentService.createAppointment(barbershopId, request);
 

@@ -34,6 +34,10 @@ public class Appointment {
     @NotNull(message = "Service is required")
     private Service service;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
+
     @Column(name = "appointment_date_time", nullable = false)
     @NotNull(message = "Appointment date and time is required")
     @Future(message = "Appointment must be in the future")
@@ -140,6 +144,14 @@ public class Appointment {
         this.service = service;
     }
 
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
+    }
+
     public LocalDateTime getAppointmentDateTime() {
         return appointmentDateTime;
     }
@@ -225,7 +237,7 @@ public class Appointment {
                 this.endDateTime.isAfter(other.appointmentDateTime);
     }
 
-        public boolean isActive() {
+    public boolean isActive() {
         return status != AppointmentStatus.CANCELLED &&
                 status != AppointmentStatus.COMPLETED &&
                 status != AppointmentStatus.NO_SHOW;

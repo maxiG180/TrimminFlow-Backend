@@ -22,6 +22,7 @@ public class AppointmentResponse {
     private String customerPhone;
     private AppointmentStatus status;
     private String notes;
+    private CustomerResponse customer;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -172,6 +173,11 @@ public class AppointmentResponse {
         response.setCustomerPhone(appointment.getCustomerPhone());
         response.setStatus(appointment.getStatus());
         response.setNotes(appointment.getNotes());
+
+        if (appointment.getCustomer() != null) {
+            response.setCustomer(CustomerResponse.fromEntity(appointment.getCustomer()));
+        }
+
         response.setCreatedAt(appointment.getCreatedAt());
         response.setUpdatedAt(appointment.getUpdatedAt());
 
@@ -267,6 +273,14 @@ public class AppointmentResponse {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public CustomerResponse getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(CustomerResponse customer) {
+        this.customer = customer;
     }
 
     public LocalDateTime getCreatedAt() {

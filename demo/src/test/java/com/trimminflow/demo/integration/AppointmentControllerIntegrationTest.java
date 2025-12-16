@@ -2,6 +2,7 @@ package com.trimminflow.demo.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.trimminflow.demo.dto.CreateAppointmentRequest;
+import com.trimminflow.demo.dto.UpdateAppointmentRequest;
 import com.trimminflow.demo.entity.*;
 import com.trimminflow.demo.repository.*;
 import com.trimminflow.demo.security.JwtUtil;
@@ -20,6 +21,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -45,6 +47,12 @@ class AppointmentControllerIntegrationTest {
 
     @Autowired
     private ServiceRepository serviceRepository;
+
+    @Autowired
+    private BusinessHoursRepository businessHoursRepository;
+
+    @Autowired
+    private AppointmentRepository appointmentRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -90,6 +98,17 @@ class AppointmentControllerIntegrationTest {
         testService.setBarbershop(testBarbershop);
         testService = serviceRepository.save(testService);
 
+        // Create Business Hours
+        for (DayOfWeek day : DayOfWeek.values()) {
+            BusinessHours hours = new BusinessHours();
+            hours.setBarbershop(testBarbershop);
+            hours.setDayOfWeek(day);
+            hours.setIsOpen(true);
+            hours.setOpenTime(java.time.LocalTime.of(0, 0));
+            hours.setCloseTime(java.time.LocalTime.of(23, 59));
+            businessHoursRepository.save(hours);
+        }
+
         // Generate JWT token
         jwtToken = jwtUtil.generateToken(testUser.getEmail(), testUser.getId(), testUser.getRole().name());
     }
@@ -107,10 +126,37 @@ class AppointmentControllerIntegrationTest {
         mockMvc.perform(post("/api/v1/appointments")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))
+                .header("X-Barbershop-Id", testBarbershop.getId())
                 .header("Authorization", "Bearer " + jwtToken))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.customerName").value("Jane Customer"))
                 .andExpect(jsonPath("$.customerEmail").value("jane@test.com"));
+    }
+
+    @Test
+    void updateAppointment_StatusToNoShow_Success() throws Exception {
+        // Given an existing appointment
+        Appointment appointment = new Appointment(
+                testBarbershop,
+                testBarber,
+                testService,
+                LocalDateTime.now().plusDays(1),
+                "Existing Customer",
+                "customer@test.com",
+                "1234567890");
+        appointment = appointmentRepository.save(appointment);
+
+        // When updating status to NO_SHOW
+        UpdateAppointmentRequest request = new UpdateAppointmentRequest();
+        request.setStatus(AppointmentStatus.NO_SHOW);
+
+        mockMvc.perform(put("/api/v1/appointments/" + appointment.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+                .header("Authorization", "Bearer " + jwtToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("NO_SHOW"));
     }
 
     @Test

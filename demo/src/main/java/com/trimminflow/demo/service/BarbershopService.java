@@ -3,6 +3,7 @@ package com.trimminflow.demo.service;
 import com.trimminflow.demo.entity.Barbershop;
 import com.trimminflow.demo.repository.BarbershopRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,9 +13,11 @@ import java.util.UUID;
 public class BarbershopService {
 
     private final BarbershopRepository barbershopRepository;
+    private final CloudinaryService cloudinaryService;
 
-    public BarbershopService(BarbershopRepository barbershopRepository) {
+    public BarbershopService(BarbershopRepository barbershopRepository, CloudinaryService cloudinaryService) {
         this.barbershopRepository = barbershopRepository;
+        this.cloudinaryService = cloudinaryService;
     }
 
     public List<Barbershop> getAllBarbershops() {
@@ -41,5 +44,16 @@ public class BarbershopService {
 
     public void deleteBarbershop(UUID id) {
         barbershopRepository.deleteById(id);
+    }
+
+    public String uploadLogo(UUID barbershopId, MultipartFile file) {
+        Barbershop barbershop = barbershopRepository.findById(barbershopId)
+                .orElseThrow(() -> new RuntimeException("Barbershop not found"));
+
+        String logoUrl = cloudinaryService.uploadImage(file);
+        barbershop.setLogoUrl(logoUrl);
+        barbershopRepository.save(barbershop);
+
+        return logoUrl;
     }
 }

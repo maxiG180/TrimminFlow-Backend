@@ -96,4 +96,23 @@ public class BarbershopController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @PostMapping("/{id}/upload-logo")
+    @Operation(summary = "Upload barbershop logo", description = "Upload a logo image for the barbershop")
+    public ResponseEntity<String> uploadLogo(@PathVariable UUID id,
+            @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+        try {
+            User user = getAuthenticatedUser();
+            // Ensure user owns this barbershop
+            if (!user.getBarbershop().getId().equals(id)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
+            String logoUrl = barbershopService.uploadLogo(id, file);
+            return ResponseEntity.ok(logoUrl);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to upload logo: " + e.getMessage());
+        }
+    }
 }
