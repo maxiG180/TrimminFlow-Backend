@@ -67,4 +67,27 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
         long countByBarbershopIdAndStatus(UUID barbershopId, AppointmentStatus status);
 
         Page<Appointment> findByCustomerIdOrderByAppointmentDateTimeDesc(UUID customerId, Pageable pageable);
+
+        // Analytics queries
+        long countByBarbershopId(UUID barbershopId);
+
+        long countByBarbershopIdAndAppointmentDateTimeBetween(
+                        UUID barbershopId,
+                        LocalDateTime start,
+                        LocalDateTime end);
+
+        @Query("SELECT s.price FROM Appointment a JOIN a.service s " +
+                        "WHERE a.barbershop.id = :barbershopId AND a.status = 'COMPLETED'")
+        List<Object[]> findCompletedAppointmentsWithPrice(@Param("barbershopId") UUID barbershopId);
+
+        @Query("SELECT s.name, COUNT(a), SUM(s.price) FROM Appointment a JOIN a.service s " +
+                        "WHERE a.barbershop.id = :barbershopId AND a.status = 'COMPLETED' " +
+                        "GROUP BY s.name ORDER BY COUNT(a) DESC")
+        List<Object[]> findPopularServices(@Param("barbershopId") UUID barbershopId);
+
+        @Query("SELECT b.firstName, COUNT(a), SUM(s.price) FROM Appointment a " +
+                        "JOIN a.barber b JOIN a.service s " +
+                        "WHERE a.barbershop.id = :barbershopId AND a.status = 'COMPLETED' " +
+                        "GROUP BY b.firstName ORDER BY COUNT(a) DESC")
+        List<Object[]> findBarberPerformance(@Param("barbershopId") UUID barbershopId);
 }
