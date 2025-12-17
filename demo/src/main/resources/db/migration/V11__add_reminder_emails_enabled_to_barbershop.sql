@@ -1,0 +1,1 @@
+ALTER TABLE barbershop ADD COLUMN IF NOT EXISTS reminder_emails_enabled BOOLEAN DEFAULT TRUE;

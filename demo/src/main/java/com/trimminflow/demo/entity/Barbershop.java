@@ -42,6 +42,9 @@ public class Barbershop {
     @Column(name = "logo_url", length = 500)
     private String logoUrl;
 
+    @Column(name = "reminder_emails_enabled")
+    private Boolean reminderEmailsEnabled = true;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -140,6 +143,14 @@ public class Barbershop {
 
     public void setLogoUrl(String logoUrl) {
         this.logoUrl = logoUrl;
+    }
+
+    public Boolean getReminderEmailsEnabled() {
+        return reminderEmailsEnabled;
+    }
+
+    public void setReminderEmailsEnabled(Boolean reminderEmailsEnabled) {
+        this.reminderEmailsEnabled = reminderEmailsEnabled;
     }
 
     public LocalDateTime getCreatedAt() {

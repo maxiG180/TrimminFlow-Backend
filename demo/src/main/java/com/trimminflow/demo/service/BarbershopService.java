@@ -56,4 +56,12 @@ public class BarbershopService {
 
         return logoUrl;
     }
+
+    public Barbershop updateReminderSettings(UUID barbershopId, Boolean reminderEmailsEnabled) {
+        Barbershop barbershop = barbershopRepository.findById(barbershopId)
+                .orElseThrow(() -> new RuntimeException("Barbershop not found"));
+
+        barbershop.setReminderEmailsEnabled(reminderEmailsEnabled);
+        return barbershopRepository.save(barbershop);
+    }
 }

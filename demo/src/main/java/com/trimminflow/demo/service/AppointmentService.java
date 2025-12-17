@@ -26,6 +26,7 @@ public class AppointmentService {
     private final BarbershopRepository barbershopRepository;
     private final BusinessHoursRepository businessHoursRepository;
     private final CustomerRepository customerRepository;
+    private final EmailService emailService;
 
     private final org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate;
 
@@ -35,6 +36,7 @@ public class AppointmentService {
             BarbershopRepository barbershopRepository,
             BusinessHoursRepository businessHoursRepository,
             CustomerRepository customerRepository,
+            EmailService emailService,
             org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate) {
         this.appointmentRepository = appointmentRepository;
         this.barberRepository = barberRepository;
@@ -42,6 +44,7 @@ public class AppointmentService {
         this.barbershopRepository = barbershopRepository;
         this.businessHoursRepository = businessHoursRepository;
         this.customerRepository = customerRepository;
+        this.emailService = emailService;
         this.messagingTemplate = messagingTemplate;
     }
 
@@ -103,6 +106,15 @@ public class AppointmentService {
         appointment.setCustomer(customer);
 
         appointment = appointmentRepository.save(appointment);
+
+        // Send confirmation email
+        try {
+            emailService.sendBookingConfirmation(appointment);
+        } catch (Exception e) {
+            // Log error but don't fail appointment creation
+            System.err.println("Failed to send booking confirmation email: " + e.getMessage());
+        }
+
         AppointmentResponse response = AppointmentResponse.fromEntity(appointment);
         // send update to everyone connected
         messagingTemplate.convertAndSend("/topic/appointments", response);

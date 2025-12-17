@@ -69,6 +69,9 @@ public class Appointment {
     @Size(max = 500, message = "Notes must be less than 500 characters")
     private String notes;
 
+    @Column(name = "reminder_sent")
+    private Boolean reminderSent = false;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -206,6 +209,14 @@ public class Appointment {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public Boolean getReminderSent() {
+        return reminderSent;
+    }
+
+    public void setReminderSent(Boolean reminderSent) {
+        this.reminderSent = reminderSent;
     }
 
     public LocalDateTime getCreatedAt() {

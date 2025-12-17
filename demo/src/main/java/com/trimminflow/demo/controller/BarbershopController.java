@@ -115,4 +115,22 @@ public class BarbershopController {
                     .body("Failed to upload logo: " + e.getMessage());
         }
     }
+
+    @PutMapping("/{id}/reminder-settings")
+    @Operation(summary = "Update reminder email settings", description = "Enable or disable 24-hour reminder emails")
+    public ResponseEntity<Barbershop> updateReminderSettings(
+            @PathVariable UUID id,
+            @RequestBody java.util.Map<String, Boolean> settings) {
+        try {
+            User user = getAuthenticatedUser();
+            if (!user.getBarbershop().getId().equals(id)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
+            Barbershop updated = barbershopService.updateReminderSettings(id, settings.get("reminderEmailsEnabled"));
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }
