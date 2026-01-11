@@ -53,5 +53,6 @@ Thumbs.db
 *.sqlite
 nul
 bin/
+.env
 
 docs/
