@@ -9,26 +9,30 @@ import java.util.stream.Collectors;
 
 public class PaginationUtils {
 
+    private PaginationUtils() {
+        // Utility class - hide constructor
+    }
+
     /**
-     * Converts a Spring Data Page<T> to a custom PageResponse<R> using a mapper function.
+     * Converts a Spring Data Page<T> to a custom PageResponse<R> using a mapper
+     * function.
      *
-     * @param page The Spring Data Page object
+     * @param page   The Spring Data Page object
      * @param mapper Function to convert Entity T to DTO R
-     * @param <T> Entity type
-     * @param <R> DTO type
+     * @param <T>    Entity type
+     * @param <R>    DTO type
      * @return PageResponse containing the mapped content
      */
     public static <T, R> PageResponse<R> createPageResponse(Page<T> page, Function<T, R> mapper) {
         List<R> content = page.getContent().stream()
                 .map(mapper)
-                .collect(Collectors.toList());
+                .toList();
 
         return new PageResponse<>(
                 content,
                 page.getNumber(),
                 page.getSize(),
                 page.getTotalElements(),
-                page.getTotalPages()
-        );
+                page.getTotalPages());
     }
 }
