@@ -56,7 +56,6 @@ public class SecurityConfig {
                                                                 "/api/v1/appointments")
                                                 .permitAll()
                                                 // protected endpoints
-                                                .requestMatchers("/api/v1/barbershops/**").authenticated()
                                                 .requestMatchers("/api/v1/users/**").authenticated()
                                                 .requestMatchers("/api/v1/services/**").authenticated()
                                                 .anyRequest().authenticated() // all other requests require auth
