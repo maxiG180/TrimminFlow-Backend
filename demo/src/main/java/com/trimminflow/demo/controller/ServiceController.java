@@ -90,13 +90,15 @@ public class ServiceController {
     }
 
     @GetMapping("/active")
-    @Operation(summary = "Get active services", description = "Get all active services for the authenticated user's barbershop")
-    public ResponseEntity<List<ServiceResponse>> getActiveServices() {
-        User user = getAuthenticatedUser();
-        UUID barbershopId = user.getBarbershop().getId();
-
-        List<ServiceResponse> services = serviceManagementService.getActiveServices(barbershopId);
-        return ResponseEntity.ok(services);
+    @Operation(summary = "Get active services", description = "Get all active services for a barbershop (Public endpoint for booking)")
+    public ResponseEntity<?> getActiveServices(@RequestHeader("X-Barbershop-Id") UUID barbershopId) {
+        try {
+            List<ServiceResponse> services = serviceManagementService.getActiveServices(barbershopId);
+            return ResponseEntity.ok(services);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest()
+                    .body(new ErrorResponse("Failed to load services", e.getMessage()));
+        }
     }
 
     @GetMapping("/{id}")

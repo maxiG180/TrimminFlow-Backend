@@ -104,17 +104,20 @@ public class BarberController {
     }
 
     @GetMapping("/active")
-    @Operation(summary = "Get active barbers (paginated)", description = "Get paginated active barbers for the authenticated user's barbershop")
-    public ResponseEntity<PageResponse<BarberResponse>> getActiveBarbers(
+    @Operation(summary = "Get active barbers", description = "Get active barbers for a barbershop (Public endpoint for booking)")
+    public ResponseEntity<?> getActiveBarbers(
+            @RequestHeader("X-Barbershop-Id") UUID barbershopId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "100") int size) {
 
-        User user = getAuthenticatedUser();
-        UUID barbershopId = user.getBarbershop().getId();
-
-        PageResponse<BarberResponse> barbers = barberManagementService.getActiveBarbersPaginated(barbershopId, page,
-                size);
-        return ResponseEntity.ok(barbers);
+        try {
+            PageResponse<BarberResponse> barbers = barberManagementService.getActiveBarbersPaginated(barbershopId, page,
+                    size);
+            return ResponseEntity.ok(barbers);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest()
+                    .body(new ErrorResponse("Failed to load barbers", e.getMessage()));
+        }
     }
 
     @GetMapping("/{id}")
